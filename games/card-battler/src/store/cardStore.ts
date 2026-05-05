@@ -1,0 +1,201 @@
+/**
+ * @file cardStore.ts
+ * @description Zustand store for Card Battler state.
+ */
+import { create } from 'zustand';
+import { CardDefinition, CardInstance } from '../types';
+import { allCards, getRandomDeck } from '../cardDatabase';
+import { GameStatus } from '@sdk/types';
+
+interface CardState {
+  allCards: CardDefinition[];
+  playerDeck: CardInstance[];
+  playerHand: CardInstance[];
+  playerBoard: CardInstance[];
+  playerHp: number;
+  playerMana: number;
+  playerMaxMana: number;
+  
+  enemyDeck: CardInstance[];
+  enemyHand: CardInstance[];
+  enemyBoard: CardInstance[];
+  enemyHp: number;
+  
+  currentTurn: 'player' | 'enemy';
+  turnNumber: number;
+  gameStatus: GameStatus;
+  
+  score: number;
+  cardsPlayed: number;
+  turnsSurvived: number;
+
+  startGame: () => void;
+  drawCard: (target?: 'player' | 'enemy', amount?: number) => void;
+  playCard: (instanceId: string, targetId?: string) => void;
+  endTurn: () => void;
+  enemyTakeTurn: () => void;
+  takeDamage: (target: 'player' | 'enemy', amount: number) => void;
+}
+
+const generateInstances = (deck: CardDefinition[]): CardInstance[] => 
+  deck.map(c => ({ ...c, instanceId: Math.random().toString(36).substr(2, 9) }));
+
+export const useCardStore = create<CardState>((set, get) => ({
+  allCards,
+  playerDeck: [],
+  playerHand: [],
+  playerBoard: [],
+  playerHp: 30,
+  playerMana: 1,
+  playerMaxMana: 1,
+  
+  enemyDeck: [],
+  enemyHand: [],
+  enemyBoard: [],
+  enemyHp: 30,
+  
+  currentTurn: 'player',
+  turnNumber: 1,
+  gameStatus: GameStatus.IDLE,
+
+  score: 0,
+  cardsPlayed: 0,
+  turnsSurvived: 0,
+
+  startGame: () => {
+    set({
+      gameStatus: GameStatus.PLAYING,
+      playerDeck: generateInstances(getRandomDeck(30)),
+      playerHand: [],
+      playerBoard: [],
+      playerHp: 30,
+      playerMana: 1,
+      playerMaxMana: 1,
+      
+      enemyDeck: generateInstances(getRandomDeck(30)),
+      enemyHand: [],
+      enemyBoard: [],
+      enemyHp: 30,
+      
+      currentTurn: 'player',
+      turnNumber: 1,
+      score: 0,
+      cardsPlayed: 0,
+      turnsSurvived: 0
+    });
+    get().drawCard('player', 4);
+    get().drawCard('enemy', 4);
+  },
+
+  drawCard: (target = 'player', amount = 1) => set(state => {
+    const isPlayer = target === 'player';
+    const deck = isPlayer ? state.playerDeck : state.enemyDeck;
+    const hand = isPlayer ? state.playerHand : state.enemyHand;
+    
+    if (deck.length === 0) return state;
+    
+    const drawn = deck.slice(0, amount);
+    const remainingDeck = deck.slice(amount);
+    const newHand = [...hand, ...drawn].slice(0, 7);
+    
+    if (isPlayer) {
+      return { playerDeck: remainingDeck, playerHand: newHand };
+    } else {
+      return { enemyDeck: remainingDeck, enemyHand: newHand.map(c => ({ ...c, isFlipped: true })) };
+    }
+  }),
+
+  playCard: (instanceId, targetId) => {
+    const state = get();
+    if (state.currentTurn !== 'player') return;
+    
+    const cardIndex = state.playerHand.findIndex(c => c.instanceId === instanceId);
+    if (cardIndex === -1) return;
+    const card = state.playerHand[cardIndex];
+    
+    if (state.playerMana < card.cost) {
+      throw new Error(`Not enough mana! Need ${card.cost}`);
+    }
+    
+    set(s => {
+      const newHand = [...s.playerHand];
+      newHand.splice(cardIndex, 1);
+      
+      let newBoard = [...s.playerBoard];
+      if (card.type !== 'spell' && newBoard.length < 5) {
+        newBoard.push(card);
+      }
+      
+      return {
+        playerHand: newHand,
+        playerBoard: newBoard,
+        playerMana: s.playerMana - card.cost,
+        cardsPlayed: s.cardsPlayed + 1,
+        score: s.score + card.cost * 10
+      };
+    });
+
+    if (card.type === 'attack' || card.type === 'spell') {
+       get().takeDamage('enemy', card.power);
+    }
+  },
+
+  endTurn: () => {
+    const state = get();
+    if (state.currentTurn !== 'player') return;
+
+    set(s => ({
+      currentTurn: 'enemy',
+      playerMaxMana: Math.min(10, s.playerMaxMana + 1),
+      playerMana: Math.min(10, s.playerMaxMana + 1),
+      turnsSurvived: s.turnsSurvived + 1
+    }));
+    
+    setTimeout(() => {
+      get().enemyTakeTurn();
+    }, 1500);
+  },
+
+  enemyTakeTurn: () => {
+    const state = get();
+    set(s => ({ currentTurn: 'enemy', enemyHand: s.enemyHand.map(c => ({...c, isFlipped: false})) }));
+    
+    const affordable = get().enemyHand.filter(c => c.cost <= get().playerMaxMana);
+    if (affordable.length > 0) {
+      affordable.sort((a, b) => b.cost - a.cost);
+      const toPlay = affordable[0];
+      
+      set(s => {
+        const newHand = s.enemyHand.filter(c => c.instanceId !== toPlay.instanceId);
+        const newBoard = s.enemyBoard.length < 5 && toPlay.type !== 'spell' 
+          ? [...s.enemyBoard, toPlay] 
+          : s.enemyBoard;
+        
+        return { enemyHand: newHand, enemyBoard: newBoard };
+      });
+      
+      if (toPlay.type === 'attack' || toPlay.type === 'spell') {
+         get().takeDamage('player', toPlay.power);
+      }
+    }
+    
+    setTimeout(() => {
+      set(s => ({
+        currentTurn: 'player',
+        turnNumber: s.turnNumber + 1
+      }));
+      get().drawCard('player', 1);
+      get().drawCard('enemy', 1);
+    }, 2000);
+  },
+
+  takeDamage: (target, amount) => set(s => {
+    if (target === 'player') {
+      const hp = Math.max(0, s.playerHp - amount);
+      return { playerHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
+    } else {
+      const hp = Math.max(0, s.enemyHp - amount);
+      return { enemyHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
+    }
+  })
+}));

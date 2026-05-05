@@ -1,0 +1,15 @@
+{
+  "name": "gamehub-platform",
+  "private": true,
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "echo 'Run php artisan serve in apps/api' && exit 1",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint",
+    "test:web": "pnpm --filter web test",
+    "test:api": "cd apps/api && php artisan test"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  }
+}

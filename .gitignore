@@ -1,0 +1,42 @@
+# Node / pnpm
+node_modules/
+.pnpm-store/
+dist/
+.cache/
+
+# Laravel
+apps/api/vendor/
+apps/api/.env
+apps/api/storage/logs/*.log
+apps/api/storage/framework/cache/
+apps/api/storage/framework/sessions/
+apps/api/bootstrap/cache/
+
+# Vite
+apps/web/dist/
+apps/web/.vite/
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Three.js / R3F
+*.glb.meta
+*.hdr.meta
