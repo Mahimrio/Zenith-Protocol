@@ -3,7 +3,7 @@
  * @description Zustand store for tracking registered games and active game state.
  */
 import { create } from 'zustand';
-import { GameManifest } from '@sdk/types';
+import type { GameManifest } from '@sdk/types';
 
 interface GameState {
   registeredGames: GameManifest[];

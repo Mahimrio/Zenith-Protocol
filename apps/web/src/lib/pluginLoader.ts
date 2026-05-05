@@ -3,7 +3,7 @@
  * @description Dynamic plugin loader for Zenith Protocol game modules.
  */
 import { lazy } from 'react';
-import { GameManifest } from '@sdk/types';
+import type { GameManifest } from '@sdk/types';
 import { useGameStore } from '../store/gameStore';
 
 export const registerGame = (manifest: GameManifest): void => {

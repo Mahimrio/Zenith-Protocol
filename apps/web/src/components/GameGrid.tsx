@@ -5,7 +5,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { GameManifest } from '@sdk/types';
+import type { GameManifest } from '@sdk/types';
 import { GameCard } from './GameCard';
 import { useNavigate } from 'react-router-dom';
 

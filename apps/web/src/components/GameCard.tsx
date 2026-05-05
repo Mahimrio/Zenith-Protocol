@@ -4,7 +4,7 @@
  */
 import React, { useRef } from 'react';
 import gsap from 'gsap';
-import { GameManifest } from '@sdk/types';
+import type { GameManifest } from '@sdk/types';
 import { GlassCard } from '@ui/GlassCard';
 import { NeonButton } from '@ui/NeonButton';
 
