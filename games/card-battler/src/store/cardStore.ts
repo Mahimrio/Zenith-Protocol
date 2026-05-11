@@ -31,14 +31,17 @@ interface CardState {
 
   startGame: () => void;
   drawCard: (target?: 'player' | 'enemy', amount?: number) => void;
-  playCard: (instanceId: string, targetId?: string) => void;
+  playCard: (instanceId: string, targetId?: string) => boolean;
   endTurn: () => void;
   enemyTakeTurn: () => void;
   takeDamage: (target: 'player' | 'enemy', amount: number) => void;
+  cleanup: () => void;
 }
 
 const generateInstances = (deck: CardDefinition[]): CardInstance[] => 
-  deck.map(c => ({ ...c, instanceId: Math.random().toString(36).substr(2, 9) }));
+  deck.map(c => ({ ...c, instanceId: Math.random().toString(36).slice(2, 11) }));
+
+let turnTimeout: ReturnType<typeof setTimeout> | null = null;
 
 export const useCardStore = create<CardState>((set, get) => ({
   allCards,
@@ -53,6 +56,8 @@ export const useCardStore = create<CardState>((set, get) => ({
   enemyHand: [],
   enemyBoard: [],
   enemyHp: 30,
+  enemyMana: 1,
+  enemyMaxMana: 1,
   
   currentTurn: 'player',
   turnNumber: 1,
@@ -107,14 +112,14 @@ export const useCardStore = create<CardState>((set, get) => ({
 
   playCard: (instanceId, targetId) => {
     const state = get();
-    if (state.currentTurn !== 'player') return;
+    if (state.currentTurn !== 'player') return false;
     
     const cardIndex = state.playerHand.findIndex(c => c.instanceId === instanceId);
-    if (cardIndex === -1) return;
+    if (cardIndex === -1) return false;
     const card = state.playerHand[cardIndex];
     
     if (state.playerMana < card.cost) {
-      throw new Error(`Not enough mana! Need ${card.cost}`);
+      return false;
     }
     
     set(s => {
@@ -138,20 +143,23 @@ export const useCardStore = create<CardState>((set, get) => ({
     if (card.type === 'attack' || card.type === 'spell') {
        get().takeDamage('enemy', card.power);
     }
+    return true;
   },
 
   endTurn: () => {
     const state = get();
     if (state.currentTurn !== 'player') return;
 
+    if (turnTimeout) clearTimeout(turnTimeout);
+
     set(s => ({
       currentTurn: 'enemy',
-      playerMaxMana: Math.min(10, s.playerMaxMana + 1),
-      playerMana: Math.min(10, s.playerMaxMana + 1),
+      enemyMaxMana: Math.min(10, s.enemyMaxMana + 1),
+      enemyMana: Math.min(10, s.enemyMaxMana + 1),
       turnsSurvived: s.turnsSurvived + 1
     }));
     
-    setTimeout(() => {
+    turnTimeout = setTimeout(() => {
       get().enemyTakeTurn();
     }, 1500);
   },
@@ -160,7 +168,7 @@ export const useCardStore = create<CardState>((set, get) => ({
     const state = get();
     set(s => ({ currentTurn: 'enemy', enemyHand: s.enemyHand.map(c => ({...c, isFlipped: false})) }));
     
-    const affordable = get().enemyHand.filter(c => c.cost <= get().playerMaxMana);
+    const affordable = get().enemyHand.filter(c => c.cost <= get().enemyMaxMana);
     if (affordable.length > 0) {
       affordable.sort((a, b) => b.cost - a.cost);
       const toPlay = affordable[0];
@@ -171,7 +179,11 @@ export const useCardStore = create<CardState>((set, get) => ({
           ? [...s.enemyBoard, toPlay] 
           : s.enemyBoard;
         
-        return { enemyHand: newHand, enemyBoard: newBoard };
+        return { 
+          enemyHand: newHand, 
+          enemyBoard: newBoard,
+          enemyMana: s.enemyMana - toPlay.cost 
+        };
       });
       
       if (toPlay.type === 'attack' || toPlay.type === 'spell') {
@@ -179,9 +191,12 @@ export const useCardStore = create<CardState>((set, get) => ({
       }
     }
     
-    setTimeout(() => {
+    if (turnTimeout) clearTimeout(turnTimeout);
+    turnTimeout = setTimeout(() => {
       set(s => ({
         currentTurn: 'player',
+        playerMaxMana: Math.min(10, s.playerMaxMana + 1),
+        playerMana: Math.min(10, s.playerMaxMana + 1),
         turnNumber: s.turnNumber + 1
       }));
       get().drawCard('player', 1);
@@ -197,5 +212,12 @@ export const useCardStore = create<CardState>((set, get) => ({
       const hp = Math.max(0, s.enemyHp - amount);
       return { enemyHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
     }
-  })
+  }),
+
+  cleanup: () => {
+    if (turnTimeout) {
+      clearTimeout(turnTimeout);
+      turnTimeout = null;
+    }
+  }
 }));

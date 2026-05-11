@@ -79,3 +79,79 @@
   - `apps/web/src/components/RouteErrorScreen.tsx`
   - wired via `errorElement` in `apps/web/src/router/index.tsx`
   - so unhandled route errors no longer show React Router’s default developer error page.
+
+---
+
+## Session 2 — Recommended Steps Applied
+
+### 1. Backend Completion: Card Battler Score Endpoint
+
+**Problem:** Card battler had no final score submission route. Frontend score bridge returned "skipped" for this game.
+
+**Files created:**
+- `apps/api/app/Services/CardScoreService.php` — validation + persistence service following Dojo/Runner pattern (DB transaction, plausibility checks, GameSession + CardSession creation, user stat increments).
+
+**Files modified:**
+- `apps/api/app/Http/Controllers/CardBattlerController.php` — added `store()` method using `SubmitCardScoreRequest` + `CardScoreService`.
+- `apps/api/routes/api.php` — added `POST /api/games/card/score` with `throttle:score-submit`.
+- `packages/game-sdk/src/useGameBridge.ts` — added `card-battler` branch to `buildScoreSubmission()`.
+- `apps/web/src/hooks/useScoreSubmit.ts` — added matching `card-battler` branch.
+
+**Result:** All three games now have full score submission pipelines.
+
+### 2. Monorepo Refinement: Package Manifests
+
+**Problem:** Sub-packages in `games/` and `packages/` lacked `package.json`, making them invisible to the pnpm workspace and preventing independent tooling.
+
+**Files created:**
+- `packages/game-sdk/package.json` (`@zenith/game-sdk`)
+- `packages/ui/package.json` (`@zenith/ui`)
+- `games/dojo-3d/package.json` (`@zenith/dojo-3d`)
+- `games/card-battler/package.json` (`@zenith/card-battler`)
+- `games/cyber-runner/package.json` (`@zenith/cyber-runner`)
+- `packages/game-sdk/src/index.ts` — barrel export
+- `packages/ui/src/index.ts` — barrel export
+
+**Design decisions:**
+- Heavy 3D libs (`three`, `@react-three/*`, `gsap`) declared as `peerDependencies` so they hoist from the host app.
+- Game modules depend on `@zenith/game-sdk` via `workspace:*`.
+- All packages scoped under `@zenith/` namespace.
+
+### 3. SDK Type Refinement: Discriminated Union
+
+**Problem:** `GameResult.metadata` was typed as `Record<string, unknown>`, losing all compile-time safety.
+
+**Files modified:**
+- `packages/game-sdk/src/types.ts` — replaced loose `GameResult` with a discriminated union:
+  - `DojoGameResult` (gameId: `'dojo-3d'`, metadata: `DojoMetadata`)
+  - `RunnerGameResult` (gameId: `'cyber-runner'`, metadata: `RunnerMetadata`)
+  - `CardBattlerGameResult` (gameId: `'card-battler'`, metadata: `CardBattlerMetadata`)
+  - Added `GameResultPayload = Omit<GameResult, 'gameId'>` for bridge consumers.
+- `packages/game-sdk/src/useGameBridge.ts` — switched to `GameResultPayload`, removed nullish fallbacks.
+- `apps/web/src/hooks/useScoreSubmit.ts` — removed nullish fallback on `metadata`.
+
+**Result:** TypeScript now catches metadata shape mismatches at compile time. All three game modules' `emitGameOver` calls already conform to the new types without modification.
+
+### 4. Authentication Flow & Dynamic Stats
+
+**Problem:** The app had no login UI, hardcoded scores in the navbar, and no way to update user stats in real-time.
+
+**Changes:**
+- **LoginPage.tsx**: Implemented a themed login page at `/login`.
+- **API Routing Fix**: Registered `api.php` in `bootstrap/app.php` (Laravel 11 requirement).
+- **Dynamic Stats**:
+  - `authStore.ts` now tracks `total_score` and `games_played`.
+  - `Navbar.tsx` and `MenuPage.tsx` display real user stats.
+  - `useScoreSubmit.ts` automatically re-fetches user data after each session.
+- **Backend**: Added `GET /api/user` and updated `AuthController` to return full user data.
+
+### 5. Game Stability Fixes (Cyber Runner)
+
+**Problem:** The player would start "floating" at y=0, missing all collisions, and obstacles used deprecated methods.
+
+**Changes:**
+- `usePhysics.ts`: Set `isGrounded` to `false` by default to ensure the player falls to the floor on start.
+- `GameCanvas.tsx`: Widened hitboxes and added `console.log` for collision debugging.
+- `obstacleFactory.ts`: Replaced deprecated `substr` with `slice`.
+
+**Result:** Cyber Runner collisions are now responsive and the game loop is fully functional.

@@ -34,6 +34,13 @@ class AuthController extends Controller {
             throw ValidationException::withMessages(['email' => ['Invalid credentials']]);
         }
 
-        return response()->json(['token' => $user->createToken('auth')->plainTextToken]);
+        return response()->json([
+            'user' => $user,
+            'token' => $user->createToken('auth')->plainTextToken
+        ]);
+    }
+
+    public function me(Request $request): JsonResponse {
+        return response()->json($request->user());
     }
 }

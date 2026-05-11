@@ -1,0 +1,23 @@
+{
+  "name": "@zenith/dojo-3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "scripts": {
+    "lint": "echo \"No lint configured\"",
+    "test": "echo \"No tests configured\""
+  },
+  "dependencies": {
+    "@zenith/game-sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
+    "@react-three/rapier": "^2.0.0",
+    "gsap": "^3.0.0",
+    "react": "^19.0.0",
+    "three": "^0.180.0"
+  }
+}
