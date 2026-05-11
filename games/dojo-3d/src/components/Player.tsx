@@ -4,7 +4,7 @@
  */
 import React, { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { RigidBody, RapierRigidBody } from '@react-three/rapier';
+import { CapsuleCollider, RigidBody, RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { usePlayerController } from '../hooks/usePlayerController';
@@ -53,7 +53,8 @@ export const Player: React.FC = () => {
   });
 
   return (
-    <RigidBody ref={rb} colliders="capsule" mass={1} type="dynamic" lockRotations position={[0, 2, 0]}>
+    <RigidBody ref={rb} colliders={false} mass={1} type="dynamic" lockRotations position={[0, 2, 0]}>
+      <CapsuleCollider args={[0.5, 0.5]} />
       <group ref={groupRef}>
         <mesh castShadow>
           <capsuleGeometry args={[0.5, 1, 4, 8]} />

@@ -76,8 +76,8 @@ Zenith Protocol is a highly scalable, web-based game platform. It employs a **Pl
 5. `php artisan key:generate`
 6. Configure DB in `.env`
 7. `php artisan migrate --seed`
-8. `cd apps/web && pnpm dev` (Terminal 1)
-9. `cd apps/api && php artisan serve` (Terminal 2)
+8. `pnpm dev:web` (Terminal 1)
+9. `pnpm dev:api` (Terminal 2)
 
 ## Environment Variables
 See the `.env.example` files in the respective `apps/api/` and `apps/web/` directories.

@@ -4,7 +4,7 @@
  */
 import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { RapierRigidBody, RigidBody } from '@react-three/rapier';
+import { BallCollider, RapierRigidBody, RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { EnemyData } from '../types';
@@ -32,7 +32,8 @@ export const Enemy: React.FC<{ data: EnemyData }> = ({ data }) => {
   });
 
   return (
-    <RigidBody ref={rb} position={data.position} colliders="hull" lockRotations mass={1}>
+    <RigidBody ref={rb} position={data.position} colliders={false} lockRotations mass={1}>
+      <BallCollider args={[0.6]} />
       <mesh ref={meshRef} castShadow>
         <icosahedronGeometry args={[0.6, 0]} />
         <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1.2} wireframe />

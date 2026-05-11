@@ -8,11 +8,13 @@ import { App } from '../App';
 import { MainLayout } from '../layouts/MainLayout';
 import { GameLayout } from '../layouts/GameLayout';
 import { MenuPage } from '../pages/MenuPage';
+import { RouteErrorScreen } from '../components/RouteErrorScreen';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <RouteErrorScreen />,
     children: [
       {
         element: <MainLayout />,

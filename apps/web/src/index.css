@@ -5,6 +5,16 @@
   --color-secondary: #ff00ff;
   --color-dark: #0f0f13;
   --color-darker: #050508;
+  --color-bg-primary: #050508;
+  --color-bg-secondary: #11131a;
+  --color-text-primary: #f5f7ff;
+  --color-text-muted: #8f96ad;
+  --color-neon-cyan: #00f5ff;
+  --color-neon-purple: #8b5cf6;
+  --color-neon-amber: #f59e0b;
+  --color-neon-green: #10b981;
+  --color-glass: rgba(255, 255, 255, 0.06);
+  --color-border-glass: rgba(255, 255, 255, 0.12);
 }
 
 @layer base {

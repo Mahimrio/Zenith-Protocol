@@ -2,11 +2,11 @@
   "name": "gamehub-platform",
   "private": true,
   "scripts": {
-    "dev:web": "pnpm --filter web dev",
-    "dev:api": "echo 'Run php artisan serve in apps/api' && exit 1",
-    "build": "pnpm --filter web build",
-    "lint": "pnpm --filter web lint",
-    "test:web": "pnpm --filter web test",
+    "dev:web": "pnpm -C apps/web dev",
+    "dev:api": "cd apps/api && php artisan serve --host=127.0.0.1 --port=8000",
+    "build": "pnpm -C apps/web build",
+    "lint": "pnpm -C apps/web lint",
+    "test:web": "pnpm -C apps/web test",
     "test:api": "cd apps/api && php artisan test"
   },
   "devDependencies": {

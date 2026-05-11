@@ -25,8 +25,8 @@ export interface GameManifest {
 
 export interface GameResult {
   gameId: string;
-  userId: string;
+  userId?: string;
   score: number;
-  metadata: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   completedAt: string;
 }
