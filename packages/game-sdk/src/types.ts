@@ -23,10 +23,57 @@ export interface GameManifest {
   tags: string[];
 }
 
-export interface GameResult {
-  gameId: string;
+// ── Per-game metadata types ──────────────────────────────────────────
+
+export interface DojoMetadata {
+  wave: number;
+  survivedMs: number;
+  enemiesKilled: number;
+  maxCombo?: number;
+}
+
+export interface RunnerMetadata {
+  distanceTraveled: number;
+  finalSpeedLevel: number;
+  obstaclesAvoided?: number;
+}
+
+export interface CardBattlerMetadata {
+  turnsSurvived: number;
+  cardsPlayed: number;
+}
+
+// ── Discriminated union for game results ─────────────────────────────
+
+export interface DojoGameResult {
+  gameId: 'dojo-3d';
   userId?: string;
   score: number;
-  metadata?: Record<string, unknown>;
+  metadata: DojoMetadata;
   completedAt: string;
 }
+
+export interface RunnerGameResult {
+  gameId: 'cyber-runner';
+  userId?: string;
+  score: number;
+  metadata: RunnerMetadata;
+  completedAt: string;
+}
+
+export interface CardBattlerGameResult {
+  gameId: 'card-battler';
+  userId?: string;
+  score: number;
+  metadata: CardBattlerMetadata;
+  completedAt: string;
+}
+
+export type GameResult = DojoGameResult | RunnerGameResult | CardBattlerGameResult;
+
+/**
+ * Payload type used by game modules when calling `emitGameOver`.
+ * The `gameId` is injected by the bridge, so modules only need to provide the rest.
+ */
+export type GameResultPayload = Omit<GameResult, 'gameId'>;
+

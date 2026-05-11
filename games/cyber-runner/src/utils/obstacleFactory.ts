@@ -19,7 +19,7 @@ export interface Obstacle {
 }
 
 export const createObstacle = (type: ObstacleType, startX: number): Obstacle => {
-  const id = Math.random().toString(36).substr(2, 9);
+  const id = Math.random().toString(36).slice(2, 11);
   switch (type) {
     case ObstacleType.BARRIER:
       return { id, type, x: startX, y: 0, width: 30, height: 80, speedMultiplier: 1 };

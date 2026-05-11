@@ -7,13 +7,16 @@ import gsap from 'gsap';
 import { useGameStore } from '../store/gameStore';
 import { useAuth } from '../hooks/useAuth';
 import { ScoreDisplay } from '@ui/ScoreDisplay';
+import { NeonButton } from '@ui/NeonButton';
 import { gameBus } from '@sdk/eventBus';
+import { useNavigate, Link } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
   const navRef = useRef<HTMLElement>(null);
   const breadcrumbRef = useRef<HTMLDivElement>(null);
   const { activeGame, registeredGames } = useGameStore();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const game = registeredGames.find(g => g.id === activeGame);
 
@@ -74,11 +77,17 @@ export const Navbar: React.FC = () => {
           </button>
         )}
         <div className="bg-glass px-4 py-1.5 rounded-lg border border-border-glass shadow-inner">
-          <ScoreDisplay score={12450} className="!text-sm" />
+          <ScoreDisplay score={user?.total_score || 0} className="!text-sm" />
         </div>
-        <div className="w-8 h-8 rounded-full bg-glass border border-neon-cyan flex items-center justify-center overflow-hidden shadow-[0_0_8px_#00f5ff40]">
-           <span className="text-xs text-neon-cyan font-bold">{user?.name?.charAt(0) || 'U'}</span>
-        </div>
+        {isAuthenticated ? (
+          <div className="w-8 h-8 rounded-full bg-glass border border-neon-cyan flex items-center justify-center overflow-hidden shadow-[0_0_8px_#00f5ff40]">
+             <span className="text-xs text-neon-cyan font-bold">{user?.name?.charAt(0) || 'U'}</span>
+          </div>
+        ) : (
+          <NeonButton variant="ghost" size="sm" onClick={() => navigate('/login')}>
+            LOGIN
+          </NeonButton>
+        )}
       </div>
     </header>
   );

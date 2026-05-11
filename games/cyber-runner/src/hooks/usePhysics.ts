@@ -12,7 +12,7 @@ export const usePhysics = () => {
   const state = useRef({
     y: 0,
     vy: 0,
-    isGrounded: true,
+    isGrounded: false,
     isSliding: false,
     slideTimer: 0
   });

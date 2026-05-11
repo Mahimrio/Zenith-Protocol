@@ -62,22 +62,35 @@ Zenith Protocol is a highly scalable, web-based game platform. It employs a **Pl
 ## Getting Started
 
 ### Prerequisites
-- Node 20+
-- pnpm 8+
-- PHP 8.3+
-- Composer
-- MySQL 8+
+- **Node 20+** and **pnpm 9+**
+- **PHP 8.3+** and **Composer**
+- **MySQL 8+**
 
-### Installation
-1. Clone the repo
+### 🛠️ Backend Setup (apps/api)
+1. `cd apps/api`
+2. `composer install`
+3. `cp .env.example .env` (Configure your DB credentials here)
+4. `php artisan key:generate`
+5. `php artisan migrate:fresh --seed` (This creates the `admin@gamehub.com` user)
+6. `php artisan serve` (Starts API at http://localhost:8000)
+
+### 🌐 Frontend Setup (apps/web)
+1. `cd apps/web`
 2. `pnpm install`
-3. `cd apps/api && cp .env.example .env`
-4. `composer install`
-5. `php artisan key:generate`
-6. Configure DB in `.env`
-7. `php artisan migrate --seed`
-8. `pnpm dev:web` (Terminal 1)
-9. `pnpm dev:api` (Terminal 2)
+3. `pnpm dev` (Starts App at http://localhost:5173)
+
+### ⚡ Unified Commands (Root)
+If your environment allows running scripts, you can run these from the project root:
+- `pnpm dev:api` — Starts the Laravel server
+- `pnpm dev:web` — Starts the Vite dev server
+
+> [!TIP]
+> **Windows Users**: If you see an error about scripts being disabled (Execution Policy), use `pnpm.cmd` instead of `pnpm`, or run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` in an Administrator PowerShell.
+
+## Authentication
+Use the following credentials after seeding:
+- **Identifier:** `admin@gamehub.com`
+- **Key:** `password`
 
 ## Environment Variables
 See the `.env.example` files in the respective `apps/api/` and `apps/web/` directories.

@@ -8,6 +8,7 @@ import { GameResult } from '@sdk/types';
 import { GlassCard } from '@ui/GlassCard';
 import { NeonButton } from '@ui/NeonButton';
 import { ScoreDisplay } from '@ui/ScoreDisplay';
+import { useAuth } from '../hooks/useAuth';
 
 export interface GameOverModalProps {
   result: GameResult;
@@ -17,6 +18,7 @@ export interface GameOverModalProps {
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ result, onPlayAgain, onMenu }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (modalRef.current) {
@@ -39,8 +41,8 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result, onPlayAgai
             <ScoreDisplay score={result.score} label="Final Score" animated className="mb-6" />
             
             <div className="flex justify-between items-center text-sm font-mono border-t border-border-glass pt-4 mt-2">
-              <span className="text-text-muted uppercase">Your Best</span>
-              <span className="text-neon-amber">{Math.max(result.score, 12450)}</span>
+              <span className="text-text-muted uppercase">Global Points</span>
+              <span className="text-neon-amber">{user?.total_score || 0}</span>
             </div>
             {result.metadata && Object.keys(result.metadata).length > 0 && (
               <div className="flex justify-between items-center text-sm font-mono pt-3 mt-3 border-t border-border-glass/50">

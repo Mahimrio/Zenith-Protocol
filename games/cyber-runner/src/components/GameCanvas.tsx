@@ -85,10 +85,10 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
     ctx.shadowBlur = 0;
 
     const pHitbox = {
-      x: player.x + pWidth * 0.1,
-      y: drawY + pHeight * 0.1,
-      w: pWidth * 0.8,
-      h: pHeight * 0.8
+      x: player.x,
+      y: drawY,
+      w: pWidth,
+      h: pHeight
     };
 
     let hit = false;
@@ -100,6 +100,7 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
         h: obs.height
       };
       if (aabbCollides(pHitbox, oHitbox)) {
+        console.log('COLLISION DETECTED', pHitbox, oHitbox);
         hit = true;
         break;
       }

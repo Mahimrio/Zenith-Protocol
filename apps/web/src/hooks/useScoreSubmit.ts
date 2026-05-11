@@ -5,6 +5,7 @@
 import { useState, useCallback } from 'react';
 import { GameResult } from '@sdk/types';
 import { useAuth } from './useAuth';
+import { useAuthStore } from '../store/authStore';
 
 interface ScoreSubmission {
   endpoint: string;
@@ -17,7 +18,7 @@ const numberFrom = (value: unknown, fallback = 0): number => {
 };
 
 const buildScoreSubmission = (result: GameResult): ScoreSubmission | null => {
-  const metadata = result.metadata ?? {};
+  const metadata = result.metadata;
 
   if (result.gameId === 'dojo-3d') {
     const enemiesKilled = Math.max(0, Math.floor(numberFrom(metadata.enemiesKilled)));
@@ -49,6 +50,21 @@ const buildScoreSubmission = (result: GameResult): ScoreSubmission | null => {
         distance_meters: distanceMeters,
         peak_speed: peakSpeed,
         obstacles_avoided: obstaclesAvoided
+      }
+    };
+  }
+
+  if (result.gameId === 'card-battler') {
+    const turnsSurvived = Math.max(1, Math.floor(numberFrom(metadata.turnsSurvived, 1)));
+    const cardsPlayed = Math.max(0, Math.floor(numberFrom(metadata.cardsPlayed, 0)));
+    const finalScore = Math.max(0, Math.floor(numberFrom(result.score)));
+
+    return {
+      endpoint: '/api/games/card/score',
+      payload: {
+        turns_survived: turnsSurvived,
+        cards_played: cardsPlayed,
+        final_score: finalScore
       }
     };
   }
@@ -88,7 +104,23 @@ export const useScoreSubmit = () => {
           if (!response.ok) {
             throw new Error(`Failed to submit score: HTTP ${response.status}`);
           }
-          return await response.json();
+          
+          const data = await response.json();
+          
+          // Refresh user data to get updated total_score
+          try {
+            const userRes = await fetch('/api/user', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (userRes.ok) {
+              const userData = await userRes.json();
+              useAuthStore.getState().updateUser(userData);
+            }
+          } catch (e) {
+            console.error('Failed to refresh user data', e);
+          }
+
+          return data;
         } catch (attemptError: unknown) {
           lastError = attemptError instanceof Error ? attemptError : new Error('Failed to submit score');
         }

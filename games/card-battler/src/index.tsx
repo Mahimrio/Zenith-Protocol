@@ -16,6 +16,9 @@ const CardBattlerGame: React.FC = () => {
 
   useEffect(() => {
     startGame();
+    return () => {
+      useCardStore.getState().cleanup();
+    };
   }, [startGame]);
 
   useEffect(() => {

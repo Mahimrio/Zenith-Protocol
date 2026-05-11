@@ -34,6 +34,11 @@ export const MenuPage: React.FC = () => {
 
   const titleText = "GAME HUB".split('');
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="relative min-h-screen flex flex-col items-center z-10 w-full pt-10 pb-20">
       <NeonGrid />
@@ -59,10 +64,10 @@ export const MenuPage: React.FC = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold text-text-primary">{user?.name || 'Guest User'}</span>
-            <span className="text-xs text-text-muted font-mono">Total Score: 12,450</span>
+            <span className="text-xs text-text-muted font-mono">Total Score: {user?.total_score?.toLocaleString() || '0'}</span>
           </div>
         </div>
-        <NeonButton variant="ghost" size="sm" onClick={logout}>
+        <NeonButton variant="ghost" size="sm" onClick={handleLogout}>
           LOGOUT
         </NeonButton>
       </footer>

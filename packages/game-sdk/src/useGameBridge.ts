@@ -4,7 +4,7 @@
  */
 import { useEffect, useState, useCallback } from 'react';
 import { gameBus } from './eventBus';
-import { GameResult, GameStatus } from './types';
+import { GameResult, GameResultPayload, GameStatus } from './types';
 
 interface ScoreSubmission {
   endpoint: string;
@@ -16,8 +16,8 @@ const numberFrom = (value: unknown, fallback = 0): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const buildScoreSubmission = (gameId: string, result: Omit<GameResult, 'gameId'>): ScoreSubmission | null => {
-  const metadata = result.metadata ?? {};
+const buildScoreSubmission = (gameId: string, result: GameResultPayload): ScoreSubmission | null => {
+  const metadata = result.metadata;
 
   if (gameId === 'dojo-3d') {
     const enemiesKilled = Math.max(0, Math.floor(numberFrom(metadata.enemiesKilled)));
@@ -54,6 +54,21 @@ const buildScoreSubmission = (gameId: string, result: Omit<GameResult, 'gameId'>
     };
   }
 
+  if (gameId === 'card-battler') {
+    const turnsSurvived = Math.max(1, Math.floor(numberFrom(metadata.turnsSurvived, 1)));
+    const cardsPlayed = Math.max(0, Math.floor(numberFrom(metadata.cardsPlayed, 0)));
+    const finalScore = Math.max(0, Math.floor(numberFrom(result.score)));
+
+    return {
+      endpoint: '/api/games/card/score',
+      payload: {
+        turns_survived: turnsSurvived,
+        cards_played: cardsPlayed,
+        final_score: finalScore,
+      },
+    };
+  }
+
   return null;
 };
 
@@ -68,8 +83,8 @@ export const useGameBridge = (gameId: string) => {
     };
   }, [gameId]);
 
-  const emitGameOver = useCallback((result: Omit<GameResult, 'gameId'>) => {
-    const fullResult: GameResult = { ...result, gameId };
+  const emitGameOver = useCallback((result: GameResultPayload) => {
+    const fullResult = { ...result, gameId } as GameResult;
     setCurrentStatus(GameStatus.GAME_OVER);
     gameBus.emit('GAME_OVER', fullResult);
 
@@ -97,8 +112,8 @@ export const useGameBridge = (gameId: string) => {
       });
   }, [gameId]);
 
-  const emitScore = useCallback((result: Omit<GameResult, 'gameId'>) => {
-    const fullResult: GameResult = { ...result, gameId };
+  const emitScore = useCallback((result: GameResultPayload) => {
+    const fullResult = { ...result, gameId } as GameResult;
     gameBus.emit('SCORE_SUBMIT', fullResult);
   }, [gameId]);
 
