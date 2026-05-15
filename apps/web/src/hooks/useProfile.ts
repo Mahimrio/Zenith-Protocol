@@ -35,6 +35,16 @@ export interface ProfileData {
   }
 }
 
+export interface PaginatedMeta {
+  current_page: number
+  last_page: number
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  meta: PaginatedMeta
+}
+
 export const useProfile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [sessions, setSessions] = useState<SessionEntry[]>([])
@@ -64,7 +74,7 @@ export const useProfile = () => {
   const loadSessions = useCallback((page = 1, game = selectedGame) => {
     setIsLoadingSessions(true)
     api.get('/profile/sessions', { params: { page, game } })
-      .then((res: AxiosResponse<any>) => {
+      .then((res: AxiosResponse<PaginatedResponse<SessionEntry>>) => {
         setSessions(prev => page === 1 ? res.data.data : [...prev, ...res.data.data])
         setHasMore(res.data.meta.current_page < res.data.meta.last_page)
         setCurrentPage(page)
