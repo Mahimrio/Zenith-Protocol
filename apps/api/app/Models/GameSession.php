@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 class GameSession extends Model {
-    use HasUuids;
+    use HasUuids, HasFactory;
 
     protected $fillable = [
         'user_id', 'game_id', 'score', 'metadata', 'server_validated_at', 'started_at', 'completed_at'

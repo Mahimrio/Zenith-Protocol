@@ -3,7 +3,7 @@
  * @description Typed event emitter using mitt for inter-module communication.
  */
 import mitt from 'mitt';
-import { GameResult } from './types';
+import type { GameResult } from './types';
 
 type Events = {
   GAME_STARTED: { gameId: string };

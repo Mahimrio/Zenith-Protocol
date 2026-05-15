@@ -7,7 +7,7 @@ import { useFrame } from '@react-three/fiber';
 import { BallCollider, RapierRigidBody, RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import gsap from 'gsap';
-import { EnemyData } from '../types';
+import type { EnemyData } from '../types';
 import { useEnemyAI } from '../hooks/useEnemyAI';
 import { useDojoStore } from '../store/dojoStore';
 

@@ -31,13 +31,15 @@ export const Arena: React.FC = () => {
       </RigidBody>
 
       {[[-14, -14], [14, -14], [-14, 14], [14, 14]].map((pos, i) => (
-        <RigidBody key={i} type="fixed">
-          <mesh position={[pos[0], 2, pos[1]]} castShadow>
-            <boxGeometry args={[1, 4, 1]} />
-            <meshStandardMaterial color="#8b5cf6" emissive="#8b5cf6" emissiveIntensity={2} toneMapped={false} />
-          </mesh>
-          <pointLight position={[pos[0], 3, pos[1]]} color="#00f5ff" intensity={0.5} distance={10} />
-        </RigidBody>
+        <React.Fragment key={i}>
+          <RigidBody type="fixed">
+            <mesh position={[pos[0], 2, pos[1]]} castShadow>
+              <boxGeometry args={[1, 4, 1]} />
+              <meshStandardMaterial color="#8b5cf6" emissive="#8b5cf6" emissiveIntensity={2} toneMapped={false} />
+            </mesh>
+            <pointLight position={[pos[0], 3, pos[1]]} color="#00f5ff" intensity={0.5} distance={10} />
+          </RigidBody>
+        </React.Fragment>
       ))}
 
       <directionalLight position={[0, 10, 10]} intensity={0.3} castShadow />

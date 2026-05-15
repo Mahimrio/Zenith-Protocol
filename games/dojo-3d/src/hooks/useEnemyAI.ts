@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { useDojoStore } from '../store/dojoStore';
 import { useCombat } from './useCombat';
 
-export const useEnemyAI = (id: string, wave: number) => {
+export const useEnemyAI = (_id: string, wave: number) => {
   const { player } = useDojoStore();
   const { processEnemyAttack } = useCombat();
   const lastAttack = useRef(0);

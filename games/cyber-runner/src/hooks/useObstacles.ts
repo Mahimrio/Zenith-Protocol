@@ -3,7 +3,8 @@
  * @description Obstacle management.
  */
 import { useRef } from 'react';
-import { Obstacle, ObstacleType, createObstacle } from '../utils/obstacleFactory';
+import type { Obstacle } from '../utils/obstacleFactory';
+import { ObstacleType, createObstacle } from '../utils/obstacleFactory';
 
 export const useObstacles = () => {
   const obstacles = useRef<Obstacle[]>([]);

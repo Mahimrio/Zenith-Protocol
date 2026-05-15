@@ -29,8 +29,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   useEffect(() => {
     // Token exists (e.g. from localStorage) but user hasn't been hydrated yet
     if (token && !user) {
-      setIsVerifying(true);
-      fetchMe().finally(() => setIsVerifying(false));
+      const verify = async () => {
+        setIsVerifying(true);
+        try {
+          await fetchMe();
+        } finally {
+          setIsVerifying(false);
+        }
+      };
+      verify();
     }
   }, [token, user, fetchMe]);
 
@@ -45,7 +52,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   /* ── Admin gate (future-proof) ────────────────────────────── */
-  if (requireAdmin && !(user as Record<string, unknown>)['is_admin']) {
+  if (requireAdmin && !(user as unknown as Record<string, unknown>)['is_admin']) {
     return <Navigate to="/" replace />;
   }
 

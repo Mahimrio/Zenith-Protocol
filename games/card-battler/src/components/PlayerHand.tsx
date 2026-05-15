@@ -3,8 +3,9 @@
  * @description Renders hand cards with a fan layout.
  */
 import React, { useRef } from 'react';
-import { CardInstance } from '../types';
-import { Card, CardHandle } from './Card';
+import type { CardInstance } from '../types';
+import type { CardHandle } from './Card';
+import { Card } from './Card';
 import { useCardStore } from '../store/cardStore';
 
 export const PlayerHand: React.FC = () => {
@@ -52,7 +53,7 @@ export const PlayerHand: React.FC = () => {
             }}
           >
             <Card 
-              ref={(el) => cardRefs.current[index] = el}
+              ref={(el) => { cardRefs.current[index] = el; }}
               card={card} 
               location="hand" 
               isPlayable={currentTurn === 'player' && playerMana >= card.cost}

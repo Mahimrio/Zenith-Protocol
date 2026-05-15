@@ -3,7 +3,7 @@
  * @description Zustand store for Card Battler state.
  */
 import { create } from 'zustand';
-import { CardDefinition, CardInstance } from '../types';
+import type { CardDefinition, CardInstance } from '../types';
 import { allCards, getRandomDeck } from '../cardDatabase';
 import { GameStatus } from '@sdk/types';
 
@@ -20,6 +20,8 @@ interface CardState {
   enemyHand: CardInstance[];
   enemyBoard: CardInstance[];
   enemyHp: number;
+  enemyMana: number;
+  enemyMaxMana: number;
   
   currentTurn: 'player' | 'enemy';
   turnNumber: number;
@@ -110,7 +112,7 @@ export const useCardStore = create<CardState>((set, get) => ({
     }
   }),
 
-  playCard: (instanceId, targetId) => {
+  playCard: (instanceId, _targetId) => {
     const state = get();
     if (state.currentTurn !== 'player') return false;
     
@@ -165,7 +167,6 @@ export const useCardStore = create<CardState>((set, get) => ({
   },
 
   enemyTakeTurn: () => {
-    const state = get();
     set(s => ({ currentTurn: 'enemy', enemyHand: s.enemyHand.map(c => ({...c, isFlipped: false})) }));
     
     const affordable = get().enemyHand.filter(c => c.cost <= get().enemyMaxMana);

@@ -9,7 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 import { ScoreDisplay } from '@ui/ScoreDisplay';
 import { NeonButton } from '@ui/NeonButton';
 import { gameBus } from '@sdk/eventBus';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
   const navRef = useRef<HTMLElement>(null);

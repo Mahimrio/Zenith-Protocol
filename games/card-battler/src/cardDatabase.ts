@@ -2,7 +2,7 @@
  * @file cardDatabase.ts
  * @description Card definitions.
  */
-import { CardDefinition } from './types';
+import type { CardDefinition } from './types';
 
 export const allCards: CardDefinition[] = [
   // 10 Attack Cards
