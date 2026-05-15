@@ -35,4 +35,17 @@ class EloquentLeaderboardRepository implements LeaderboardRepositoryInterface {
             ->where('score', '>', $userScore)
             ->count() + 1;
     }
+
+    /**
+     * Get the user's highest validated score for a specific game.
+     */
+    public function getUserBestScore(string $gameId, string $userId): ?int {
+        $score = GameSession::query()
+            ->where('game_id', $gameId)
+            ->where('user_id', $userId)
+            ->whereNotNull('server_validated_at')
+            ->max('score');
+
+        return $score !== null ? (int) $score : null;
+    }
 }

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Events\ScoreSubmitted;
 use App\Models\GameSession;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class CardScoreService {
     public function validateAndSave(User $user, array $data): GameSession {
-        return DB::transaction(function () use ($user, $data) {
+        $session = DB::transaction(function () use ($user, $data) {
             $turnsSurvived = $data['turns_survived'];
             $cardsPlayed = $data['cards_played'];
             $finalScore = $data['final_score'];
@@ -49,5 +50,17 @@ class CardScoreService {
 
             return $session;
         });
+
+        // Broadcast after transaction commits — calculate new rank
+        $rank = GameSession::where('game_id', 'card-battler')
+            ->whereNotNull('server_validated_at')
+            ->where('score', '>', $session->score)
+            ->count() + 1;
+
+        Cache::forget('leaderboard_card-battler');
+
+        broadcast(new ScoreSubmitted('card-battler', $rank, $user, $session->score))->toOthers();
+
+        return $session;
     }
 }
