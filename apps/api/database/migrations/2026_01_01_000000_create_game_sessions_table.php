@@ -20,8 +20,8 @@ return new class extends Migration {
 
             $table->index('user_id');
             $table->index('game_id');
-            $table->index(['score' => 'desc']);
-            $table->index(['game_id', 'score' => 'desc']);
+            $table->index('score');
+            $table->index(['game_id', 'score']);
         });
     }
 
