@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * @file index.tsx
  * @description React Router setup with lazy loading for game modules.
@@ -17,7 +18,10 @@ import { MenuPage } from '../pages/MenuPage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { lazy } from 'react';
 import { RouteErrorScreen } from '../components/RouteErrorScreen';
+
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
 
 export const router = createBrowserRouter([
   {
@@ -52,11 +56,10 @@ export const router = createBrowserRouter([
             path: 'play/:gameId',
             element: <GameLayout />,
           },
-          // Future: profile page
-          // {
-          //   path: 'profile',
-          //   element: <ProfilePage />,
-          // },
+          {
+            path: 'profile',
+            element: <ProfilePage />,
+          },
         ],
       },
     ],
