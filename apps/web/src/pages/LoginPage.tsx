@@ -3,7 +3,7 @@
  * @description Sleek neon-themed login page.
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { GlassCard } from '@ui/GlassCard';
 import { NeonButton } from '@ui/NeonButton';
@@ -103,6 +103,15 @@ export const LoginPage: React.FC = () => {
         </form>
 
         <div className="mt-8 pt-8 border-t border-border-glass flex flex-col items-center gap-4">
+          <p className="text-text-muted text-xs font-mono">
+            Don&apos;t have an account?{' '}
+            <Link
+              to="/register"
+              className="text-neon-cyan hover:underline transition-colors"
+            >
+              Register
+            </Link>
+          </p>
           <p className="text-text-muted text-xs font-mono">AUTHORIZED PERSONNEL ONLY</p>
           <div className="flex gap-4">
             <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse" />

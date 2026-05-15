@@ -1,6 +1,13 @@
 /**
  * @file index.tsx
  * @description React Router setup with lazy loading for game modules.
+ *
+ * Route structure:
+ *  - `/`          → MenuPage (public — users can browse games)
+ *  - `/login`     → LoginPage (public)
+ *  - `/register`  → RegisterPage (public)
+ *  - `/play/:id`  → GameLayout (protected — requires auth)
+ *  - `/profile`   → ProfilePage (protected — future)
  */
 import React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
@@ -9,6 +16,8 @@ import { MainLayout } from '../layouts/MainLayout';
 import { GameLayout } from '../layouts/GameLayout';
 import { MenuPage } from '../pages/MenuPage';
 import { LoginPage } from '../pages/LoginPage';
+import { RegisterPage } from '../pages/RegisterPage';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 import { RouteErrorScreen } from '../components/RouteErrorScreen';
 
 export const router = createBrowserRouter([
@@ -17,23 +26,40 @@ export const router = createBrowserRouter([
     element: <App />,
     errorElement: <RouteErrorScreen />,
     children: [
+      /* ── Public routes ─────────────────────────────────────── */
       {
         element: <MainLayout />,
         children: [
           {
             index: true,
-            element: <MenuPage />
-          }
-        ]
+            element: <MenuPage />,
+          },
+        ],
       },
       {
         path: 'login',
-        element: <LoginPage />
+        element: <LoginPage />,
       },
       {
-        path: 'play/:gameId',
-        element: <GameLayout />,
-      }
-    ]
-  }
+        path: 'register',
+        element: <RegisterPage />,
+      },
+
+      /* ── Protected routes (require authentication) ─────────── */
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: 'play/:gameId',
+            element: <GameLayout />,
+          },
+          // Future: profile page
+          // {
+          //   path: 'profile',
+          //   element: <ProfilePage />,
+          // },
+        ],
+      },
+    ],
+  },
 ]);
