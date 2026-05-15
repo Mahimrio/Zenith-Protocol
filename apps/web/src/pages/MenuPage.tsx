@@ -1,20 +1,40 @@
 /**
  * @file MenuPage.tsx
- * @description Main menu page with animated title and game grid.
+ * @description Main menu page with animated title, game grid,
+ * and collapsible real-time leaderboard rankings section.
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import { useGameStore } from '../store/gameStore';
 import { useAuth } from '../hooks/useAuth';
 import { NeonGrid } from '../components/NeonGrid';
 import { GameGrid } from '../components/GameGrid';
+import { Leaderboard } from '../components/Leaderboard';
 import { NeonButton } from '@ui/NeonButton';
+import { useNavigate } from 'react-router-dom';
 
+/**
+ * Main menu page — hub for game selection and live leaderboards.
+ *
+ * Renders:
+ *  - Animated "GAME HUB" title with staggered letter entrance
+ *  - GameGrid for game selection
+ *  - Collapsible "RANKINGS" section with GSAP height animation
+ *  - User info footer with logout
+ */
 export const MenuPage: React.FC = () => {
   const { registeredGames } = useGameStore();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const titleRef = useRef<HTMLHeadingElement>(null);
 
+  /* ── Rankings collapse state ────────────────────────────────────── */
+  const [rankingsOpen, setRankingsOpen] = useState(false);
+  const rankingsContentRef = useRef<HTMLDivElement>(null);
+  const rankingsWrapperRef = useRef<HTMLDivElement>(null);
+  const chevronRef = useRef<HTMLSpanElement>(null);
+
+  /* ── Title letter animation ─────────────────────────────────────── */
   useEffect(() => {
     if (titleRef.current) {
       const letters = titleRef.current.children;
@@ -33,6 +53,37 @@ export const MenuPage: React.FC = () => {
   }, []);
 
   const titleText = "GAME HUB".split('');
+
+  /* ── Rankings expand/collapse animation ─────────────────────────── */
+  const toggleRankings = useCallback(() => {
+    const wrapper = rankingsWrapperRef.current;
+    const content = rankingsContentRef.current;
+    const chevron = chevronRef.current;
+    if (!wrapper || !content || !chevron) return;
+
+    if (rankingsOpen) {
+      // Collapse
+      gsap.to(wrapper, {
+        height: 0,
+        opacity: 0,
+        duration: 0.4,
+        ease: 'power2.inOut',
+      });
+      gsap.to(chevron, { rotation: 0, duration: 0.3, ease: 'power2.out' });
+    } else {
+      // Expand — measure natural height then animate to it
+      const naturalHeight = content.scrollHeight;
+      gsap.to(wrapper, {
+        height: naturalHeight,
+        opacity: 1,
+        duration: 0.5,
+        ease: 'power2.out',
+      });
+      gsap.to(chevron, { rotation: 180, duration: 0.3, ease: 'power2.out' });
+    }
+
+    setRankingsOpen(!rankingsOpen);
+  }, [rankingsOpen]);
 
   const handleLogout = () => {
     logout();
@@ -55,6 +106,66 @@ export const MenuPage: React.FC = () => {
         </div>
 
         <GameGrid games={registeredGames} />
+
+        {/* ── Rankings Section (collapsible) ──────────────────────── */}
+        <div className="w-full mt-16">
+          <button
+            onClick={toggleRankings}
+            className="
+              w-full flex items-center justify-between px-4 py-3
+              rounded-xl bg-glass border border-border-glass
+              hover:bg-white/[0.06] transition-colors duration-200
+              cursor-pointer group
+            "
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-8 h-8 rounded-lg bg-neon-amber/10 border border-neon-amber/30
+                           flex items-center justify-center"
+              >
+                <svg
+                  className="w-4 h-4 text-neon-amber"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2
+                className="text-base font-bold text-text-primary tracking-widest uppercase"
+                style={{ textShadow: '0 0 8px rgba(245, 158, 11, 0.3)' }}
+              >
+                Rankings
+              </h2>
+              {/* Live badge */}
+              <span className="px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[10px] font-bold uppercase tracking-wider">
+                Live
+              </span>
+            </div>
+            {/* Chevron */}
+            <span
+              ref={chevronRef}
+              className="text-text-muted group-hover:text-text-primary transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </button>
+
+          {/* Collapsible wrapper — height animated by GSAP */}
+          <div
+            ref={rankingsWrapperRef}
+            className="overflow-hidden"
+            style={{ height: 0, opacity: 0 }}
+          >
+            <div ref={rankingsContentRef} className="pt-4">
+              <Leaderboard />
+            </div>
+          </div>
+        </div>
       </div>
 
       <footer className="fixed bottom-0 w-full h-16 bg-bg-secondary/80 backdrop-blur-md border-t border-border-glass flex items-center justify-between px-8 z-20">

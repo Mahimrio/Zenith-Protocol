@@ -3,14 +3,16 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Events\ScoreSubmitted;
 use App\Models\GameSession;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DojoScoreService {
     public function validateAndSave(User $user, array $data): GameSession {
-        return DB::transaction(function () use ($user, $data) {
+        $session = DB::transaction(function () use ($user, $data) {
             if ($data['survival_ms'] <= 0 || $data['survival_ms'] > 7200000) {
                 abort(422, 'Invalid survival time.');
             }
@@ -51,5 +53,17 @@ class DojoScoreService {
 
             return $session;
         });
+
+        // Broadcast after transaction commits — calculate new rank
+        $rank = GameSession::where('game_id', 'dojo-3d')
+            ->whereNotNull('server_validated_at')
+            ->where('score', '>', $session->score)
+            ->count() + 1;
+
+        Cache::forget('leaderboard_dojo-3d');
+
+        broadcast(new ScoreSubmitted('dojo-3d', $rank, $user, $session->score))->toOthers();
+
+        return $session;
     }
 }

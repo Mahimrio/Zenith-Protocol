@@ -3,14 +3,16 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Events\ScoreSubmitted;
 use App\Models\GameSession;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RunnerScoreService {
     public function validateAndSave(User $user, array $data): GameSession {
-        return DB::transaction(function () use ($user, $data) {
+        $session = DB::transaction(function () use ($user, $data) {
             $maxTheoreticalDistance = 100000;
             if ($data['distance_meters'] > $maxTheoreticalDistance) {
                 abort(422, 'Impossible distance.');
@@ -42,5 +44,17 @@ class RunnerScoreService {
 
             return $session;
         });
+
+        // Broadcast after transaction commits — calculate new rank
+        $rank = GameSession::where('game_id', 'cyber-runner')
+            ->whereNotNull('server_validated_at')
+            ->where('score', '>', $session->score)
+            ->count() + 1;
+
+        Cache::forget('leaderboard_cyber-runner');
+
+        broadcast(new ScoreSubmitted('cyber-runner', $rank, $user, $session->score))->toOthers();
+
+        return $session;
     }
 }

@@ -6,18 +6,23 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * Transforms a single GameSession into a leaderboard row.
+ *
+ * Rank is set via `computed_rank` attribute injected by the controller
+ * (avoids a static counter that would break under Octane / concurrent requests).
+ */
 class LeaderboardEntryResource extends JsonResource {
-    private static int $rankCounter = 1;
-
     public function toArray(Request $request): array {
         return [
-            'rank' => self::$rankCounter++,
-            'user' => [
-                'name' => $this->user->name,
-                'avatar_url' => $this->user->avatar_url
+            'rank'         => $this->computed_rank ?? null,
+            'user'         => [
+                'id'         => $this->user->id,
+                'name'       => $this->user->name,
+                'avatar_url' => $this->user->avatar_url,
             ],
-            'score' => $this->score,
-            'completed_at' => $this->completed_at
+            'score'        => $this->score,
+            'completed_at' => $this->completed_at?->toISOString(),
         ];
     }
 }
