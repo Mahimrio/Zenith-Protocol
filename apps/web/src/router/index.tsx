@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * @file index.tsx
  * @description React Router setup with lazy loading for game modules.

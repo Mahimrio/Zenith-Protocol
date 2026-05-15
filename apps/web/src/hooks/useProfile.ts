@@ -37,19 +37,26 @@ export interface ProfileData {
 export const useProfile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [sessions, setSessions] = useState<SessionEntry[]>([])
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false)
-  const [isLoadingSessions, setIsLoadingSessions] = useState(false)
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true)
+  const [isLoadingSessions, setIsLoadingSessions] = useState(true)
   const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedGame, setSelectedGame] = useState<string | null>(null)
 
   // Fetch profile stats on mount
   useEffect(() => {
-    setIsLoadingProfile(true)
+    let cancelled = false
     api.get('/profile')
-      .then(res => setProfile(res.data))
+      .then(res => {
+        if (!cancelled) setProfile(res.data)
+      })
       .catch(err => console.error('Failed to load profile', err))
-      .finally(() => setIsLoadingProfile(false))
+      .finally(() => {
+        if (!cancelled) setIsLoadingProfile(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // Fetch sessions when game filter changes
@@ -66,7 +73,7 @@ export const useProfile = () => {
   }, [selectedGame])
 
   useEffect(() => {
-    loadSessions(1)
+    queueMicrotask(() => loadSessions(1))
   }, [loadSessions])
 
   const uploadAvatar = async (file: File) => {
