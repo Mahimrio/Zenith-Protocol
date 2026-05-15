@@ -8,6 +8,7 @@ use App\Http\Controllers\RunnerController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\UserSessionController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserProfileController;
 
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
@@ -24,4 +25,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/leaderboards', [LeaderboardController::class, 'index'])->middleware('throttle:60,1');
     Route::get('/user', [AuthController::class, 'me']);
     Route::get('/user/sessions', [UserSessionController::class, 'index']);
+
+    Route::get('/profile', [UserProfileController::class, 'show']);
+    Route::get('/profile/sessions', [UserProfileController::class, 'sessions']);
+    Route::post('/profile/avatar', [UserProfileController::class, 'updateAvatar']);
 });
