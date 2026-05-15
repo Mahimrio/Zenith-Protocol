@@ -2,7 +2,8 @@
  * @file pluginLoader.ts
  * @description Dynamic plugin loader for Zenith Protocol game modules.
  */
-import { lazy, ComponentType } from 'react';
+import { lazy } from 'react';
+import type { ComponentType } from 'react';
 import type { GameManifest } from '@sdk/types';
 import { useGameStore } from '../store/gameStore';
 

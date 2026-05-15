@@ -10,6 +10,8 @@
     "test:api": "cd apps/api && php artisan test"
   },
   "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "turbo": "latest"
   },
   "dependencies": {
