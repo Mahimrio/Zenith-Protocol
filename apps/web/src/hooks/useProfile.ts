@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { api } from '../lib/axios'
+import api from '../lib/axios'
+import type { AxiosResponse, AxiosError } from 'axios'
 import { useAuthStore } from '../store/authStore'
 import type { SessionEntry } from '@zenith/ui'
 
@@ -47,10 +48,10 @@ export const useProfile = () => {
   useEffect(() => {
     let cancelled = false
     api.get('/profile')
-      .then(res => {
+      .then((res: AxiosResponse<ProfileData>) => {
         if (!cancelled) setProfile(res.data)
       })
-      .catch(err => console.error('Failed to load profile', err))
+      .catch((err: AxiosError) => console.error('Failed to load profile', err))
       .finally(() => {
         if (!cancelled) setIsLoadingProfile(false)
       })
@@ -63,12 +64,12 @@ export const useProfile = () => {
   const loadSessions = useCallback((page = 1, game = selectedGame) => {
     setIsLoadingSessions(true)
     api.get('/profile/sessions', { params: { page, game } })
-      .then(res => {
+      .then((res: AxiosResponse<any>) => {
         setSessions(prev => page === 1 ? res.data.data : [...prev, ...res.data.data])
         setHasMore(res.data.meta.current_page < res.data.meta.last_page)
         setCurrentPage(page)
       })
-      .catch(err => console.error('Failed to load sessions', err))
+      .catch((err: AxiosError) => console.error('Failed to load sessions', err))
       .finally(() => setIsLoadingSessions(false))
   }, [selectedGame])
 

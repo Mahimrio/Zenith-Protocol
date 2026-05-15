@@ -28,7 +28,7 @@ export default function ProfilePage() {
   } = useProfile()
 
   const bannerRef = useRef<HTMLDivElement>(null)
-  const cardsRef = useRef<(HTMLDivElement | null)>([])
+  const cardsRef = useRef<Array<HTMLDivElement | null>>([])
   const [isUploading, setIsUploading] = useState(false)
 
   // Entrance animations
@@ -43,8 +43,9 @@ export default function ProfilePage() {
         })
       }
       
-      if (cardsRef.current.length > 0) {
-        gsap.from(cardsRef.current, {
+      const cardEls = cardsRef.current.filter((el): el is HTMLDivElement => el !== null)
+      if (cardEls.length > 0) {
+        gsap.from(cardEls, {
           y: 30,
           opacity: 0,
           duration: 0.4,
@@ -132,7 +133,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Dojo 3D Card */}
             <GlassCard
-              ref={(el) => (cardsRef.current[0] = el)}
+              ref={(el: HTMLDivElement | null) => { cardsRef.current[0] = el }}
               className="border-t-2 border-t-neon-amber flex flex-col justify-between h-full"
             >
               <div>
@@ -156,7 +157,7 @@ export default function ProfilePage() {
 
             {/* Card Battler Card */}
             <GlassCard
-              ref={(el) => (cardsRef.current[1] = el)}
+              ref={(el: HTMLDivElement | null) => { cardsRef.current[1] = el }}
               className="border-t-2 border-t-neon-teal flex flex-col justify-between h-full"
             >
               <div>
@@ -180,7 +181,7 @@ export default function ProfilePage() {
 
             {/* Cyber Runner Card */}
             <GlassCard
-              ref={(el) => (cardsRef.current[2] = el)}
+              ref={(el: HTMLDivElement | null) => { cardsRef.current[2] = el }}
               className="border-t-2 border-t-neon-cyan flex flex-col justify-between h-full"
             >
               <div>
