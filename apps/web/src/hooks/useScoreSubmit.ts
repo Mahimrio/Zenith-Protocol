@@ -78,7 +78,7 @@ export const useScoreSubmit = () => {
   const [error, setError] = useState<Error | null>(null);
   const { token } = useAuth();
 
-  const submitScore = useCallback(async (result: GameResult, retries = 3): Promise<any> => {
+  const submitScore = useCallback(async (result: GameResult, retries = 3): Promise<unknown> => {
     setIsSubmitting(true);
     setError(null);
 

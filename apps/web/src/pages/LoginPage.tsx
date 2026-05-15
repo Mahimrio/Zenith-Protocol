@@ -37,8 +37,8 @@ export const LoginPage: React.FC = () => {
       const data = await response.json();
       login(data.user, data.token);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }

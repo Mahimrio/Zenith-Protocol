@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/static-components */
 /**
  * @file GameLayout.tsx
  * @description Full-screen layout for active game without navigation.
@@ -27,7 +28,7 @@ export const GameLayout: React.FC = () => {
     return null;
   }
 
-  const GameComponent = launchGamePlugin(gameId);
+  const GameComponent = gameId ? launchGamePlugin(gameId) : null;
 
   if (!GameComponent) {
     return (

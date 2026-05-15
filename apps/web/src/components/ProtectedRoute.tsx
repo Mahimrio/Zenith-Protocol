@@ -29,8 +29,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   useEffect(() => {
     // Token exists (e.g. from localStorage) but user hasn't been hydrated yet
     if (token && !user) {
-      setIsVerifying(true);
-      fetchMe().finally(() => setIsVerifying(false));
+      const verify = async () => {
+        setIsVerifying(true);
+        try {
+          await fetchMe();
+        } finally {
+          setIsVerifying(false);
+        }
+      };
+      verify();
     }
   }, [token, user, fetchMe]);
 
