@@ -5,7 +5,7 @@
 export const spawnPatterns = {
   generatePositions: (count: number, playerPos: [number, number, number], arenaRadius: number = 14) => {
     const positions: [number, number, number][] = [];
-    const [px, py, pz] = playerPos;
+    const [px, _py, pz] = playerPos;
     
     for (let i = 0; i < count; i++) {
       let angle = Math.random() * Math.PI * 2;

@@ -3,7 +3,7 @@
  * @description Hook to submit scores to backend game-specific session routes.
  */
 import { useState, useCallback } from 'react';
-import { GameResult } from '@sdk/types';
+import type { GameResult } from '@sdk/types';
 import { useAuth } from './useAuth';
 import { useAuthStore } from '../store/authStore';
 
@@ -18,58 +18,59 @@ const numberFrom = (value: unknown, fallback = 0): number => {
 };
 
 const buildScoreSubmission = (result: GameResult): ScoreSubmission | null => {
-  const metadata = result.metadata;
+  switch (result.gameId) {
+    case 'dojo-3d': {
+      const metadata = result.metadata;
+      const enemiesKilled = Math.max(0, Math.floor(numberFrom(metadata.enemiesKilled)));
+      const wavesSurvived = Math.max(0, Math.floor(numberFrom(metadata.wave)));
+      const survivalMs = Math.max(1000, Math.floor(numberFrom(metadata.survivedMs, 1000)));
+      const rawCombo = Math.max(0, Math.floor(numberFrom(metadata.maxCombo, enemiesKilled)));
 
-  if (result.gameId === 'dojo-3d') {
-    const enemiesKilled = Math.max(0, Math.floor(numberFrom(metadata.enemiesKilled)));
-    const wavesSurvived = Math.max(0, Math.floor(numberFrom(metadata.wave)));
-    const survivalMs = Math.max(1000, Math.floor(numberFrom(metadata.survivedMs, 1000)));
-    const rawCombo = Math.max(0, Math.floor(numberFrom(metadata.maxCombo, enemiesKilled)));
+      return {
+        endpoint: '/api/games/dojo/sessions',
+        payload: {
+          survival_ms: survivalMs,
+          waves_survived: wavesSurvived,
+          enemies_killed: enemiesKilled,
+          score: Math.max(0, Math.floor(numberFrom(result.score))),
+          max_combo: Math.min(rawCombo, enemiesKilled)
+        }
+      };
+    }
+    case 'cyber-runner': {
+      const metadata = result.metadata;
+      const distanceMeters = Math.max(1, Math.floor(numberFrom(metadata.distanceTraveled, result.score)));
+      const finalSpeedLevel = Math.max(0, Math.floor(numberFrom(metadata.finalSpeedLevel, 1)));
+      const peakSpeed = Math.min(1000, Math.max(280, 280 + (finalSpeedLevel * 20)));
+      const obstaclesAvoided = Math.max(0, Math.floor(numberFrom(metadata.obstaclesAvoided, 0)));
 
-    return {
-      endpoint: '/api/games/dojo/sessions',
-      payload: {
-        survival_ms: survivalMs,
-        waves_survived: wavesSurvived,
-        enemies_killed: enemiesKilled,
-        score: Math.max(0, Math.floor(numberFrom(result.score))),
-        max_combo: Math.min(rawCombo, enemiesKilled)
-      }
-    };
+      return {
+        endpoint: '/api/games/runner/sessions',
+        payload: {
+          distance_meters: distanceMeters,
+          peak_speed: peakSpeed,
+          obstacles_avoided: obstaclesAvoided
+        }
+      };
+    }
+    case 'card-battler': {
+      const metadata = result.metadata;
+      const turnsSurvived = Math.max(1, Math.floor(numberFrom(metadata.turnsSurvived, 1)));
+      const cardsPlayed = Math.max(0, Math.floor(numberFrom(metadata.cardsPlayed, 0)));
+      const finalScore = Math.max(0, Math.floor(numberFrom(result.score)));
+
+      return {
+        endpoint: '/api/games/card/score',
+        payload: {
+          turns_survived: turnsSurvived,
+          cards_played: cardsPlayed,
+          final_score: finalScore
+        }
+      };
+    }
+    default:
+      return null;
   }
-
-  if (result.gameId === 'cyber-runner') {
-    const distanceMeters = Math.max(1, Math.floor(numberFrom(metadata.distanceTraveled, result.score)));
-    const finalSpeedLevel = Math.max(0, Math.floor(numberFrom(metadata.finalSpeedLevel, 1)));
-    const peakSpeed = Math.min(1000, Math.max(280, 280 + (finalSpeedLevel * 20)));
-    const obstaclesAvoided = Math.max(0, Math.floor(numberFrom(metadata.obstaclesAvoided, 0)));
-
-    return {
-      endpoint: '/api/games/runner/sessions',
-      payload: {
-        distance_meters: distanceMeters,
-        peak_speed: peakSpeed,
-        obstacles_avoided: obstaclesAvoided
-      }
-    };
-  }
-
-  if (result.gameId === 'card-battler') {
-    const turnsSurvived = Math.max(1, Math.floor(numberFrom(metadata.turnsSurvived, 1)));
-    const cardsPlayed = Math.max(0, Math.floor(numberFrom(metadata.cardsPlayed, 0)));
-    const finalScore = Math.max(0, Math.floor(numberFrom(result.score)));
-
-    return {
-      endpoint: '/api/games/card/score',
-      payload: {
-        turns_survived: turnsSurvived,
-        cards_played: cardsPlayed,
-        final_score: finalScore
-      }
-    };
-  }
-
-  return null;
 };
 
 export const useScoreSubmit = () => {

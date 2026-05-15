@@ -1,29 +1,29 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "es2023",
-    "lib": ["ES2023", "DOM"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "esnext",
-    "types": ["vite/client"],
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
     "baseUrl": ".",
     "paths": {
       "@ui/*": ["../../packages/ui/src/*"],
       "@sdk/*": ["../../packages/game-sdk/src/*"],
       "@store/*": ["src/store/*"],
       "@hooks/*": ["src/hooks/*"],
-      "@games/*": ["../../games/*"]
+      "@games/*": ["../../games/*"],
+      "three": ["./node_modules/@types/three"],
+      "three/*": ["./node_modules/@types/three/*"]
     },
-
-    /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

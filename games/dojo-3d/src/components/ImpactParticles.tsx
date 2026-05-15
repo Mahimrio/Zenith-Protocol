@@ -19,7 +19,7 @@ export const ImpactParticles: React.FC = () => {
     }
   }, [score]);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (active && particlesRef.current) {
       particlesRef.current.rotation.y += delta;
       particlesRef.current.scale.addScalar(delta * 2);

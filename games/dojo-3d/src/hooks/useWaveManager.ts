@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useDojoStore } from '../store/dojoStore';
 import { spawnPatterns } from '../utils/spawnPatterns';
-import { EnemyData } from '../types';
+import type { EnemyData } from '../types';
 
 type WaveState = 'WAITING' | 'SPAWNING' | 'ACTIVE' | 'WAVE_CLEAR';
 
@@ -41,7 +41,7 @@ export const useWaveManager = () => {
   useEffect(() => {
     if (waveState === 'WAVE_CLEAR') {
       if (countdown > 0) {
-        const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+        const timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
         return () => clearTimeout(timer);
       } else {
         nextWave();

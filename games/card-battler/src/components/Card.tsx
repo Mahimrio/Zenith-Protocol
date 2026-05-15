@@ -2,9 +2,9 @@
  * @file Card.tsx
  * @description GSAP-powered card component.
  */
-import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import gsap from 'gsap';
-import { CardInstance } from '../types';
+import type { CardInstance } from '../types';
 import { GlassCard } from '@ui/GlassCard';
 
 export interface CardProps {

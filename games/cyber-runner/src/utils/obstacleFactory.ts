@@ -2,11 +2,12 @@
  * @file obstacleFactory.ts
  * @description Factory for creating obstacles.
  */
-export enum ObstacleType {
-  BARRIER,
-  LOW_BLOCK,
-  HOVER_MINE
-}
+export const ObstacleType = {
+  BARRIER: 0,
+  LOW_BLOCK: 1,
+  HOVER_MINE: 2,
+} as const
+export type ObstacleType = typeof ObstacleType[keyof typeof ObstacleType]
 
 export interface Obstacle {
   id: string;

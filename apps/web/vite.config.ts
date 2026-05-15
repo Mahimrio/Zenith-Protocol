@@ -24,7 +24,9 @@ export default defineConfig({
       '@store': path.resolve(__dirname, './src/store'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@games': path.resolve(__dirname, '../../games'),
-    }
+    },
+    dedupe: ['react', 'react-dom', 'three', 'gsap', 'zustand'],
+    preserveSymlinks: false,
   },
   build: {
     rollupOptions: {

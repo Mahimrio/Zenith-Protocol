@@ -45,7 +45,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   /* ── Admin gate (future-proof) ────────────────────────────── */
-  if (requireAdmin && !(user as Record<string, unknown>)['is_admin']) {
+  if (requireAdmin && !(user as unknown as Record<string, unknown>)['is_admin']) {
     return <Navigate to="/" replace />;
   }
 

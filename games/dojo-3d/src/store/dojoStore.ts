@@ -3,7 +3,7 @@
  * @description Zustand store for 3D Dojo state.
  */
 import { create } from 'zustand';
-import { EnemyData, PlayerData } from '../types';
+import type { EnemyData, PlayerData } from '../types';
 import { combatFormulas } from '../utils/combatFormulas';
 import { GameStatus } from '@sdk/types';
 
@@ -27,7 +27,7 @@ interface DojoState {
   updatePlayerPos: (pos: [number, number, number]) => void;
 }
 
-export const useDojoStore = create<DojoState>((set, get) => ({
+export const useDojoStore = create<DojoState>((set, _get) => ({
   gameStatus: GameStatus.IDLE,
   wave: 1,
   score: 0,

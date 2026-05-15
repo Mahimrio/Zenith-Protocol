@@ -13,9 +13,9 @@ import { useInputHandler } from '../hooks/useInputHandler';
 
 export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }> = ({ onGameSpeedUpdate }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { state: pState, update: pUpdate, jump, slide } = usePhysics();
+  const { state: _pState, update: pUpdate, jump, slide } = usePhysics();
   const { updateAndDraw } = useParallax();
-  const { obstacles, update: obsUpdate, draw: obsDraw, reset: obsReset } = useObstacles();
+  const { obstacles: _obstacles, update: obsUpdate, draw: obsDraw, reset: obsReset } = useObstacles();
   const { incrementDistance, triggerGameOver, gameStatus } = useRunnerStore();
   
   const gameSpeedRef = useRef(280);
@@ -24,7 +24,7 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
 
   useInputHandler(jump, slide, gameStatus === 'PLAYING');
 
-  const { start, stop } = useGameLoop((deltaTime, totalTime) => {
+  const { start, stop } = useGameLoop((deltaTime, _totalTime) => {
     if (gameStatus !== 'PLAYING') return;
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');

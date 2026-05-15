@@ -7,7 +7,7 @@ export const combatFormulas = {
     const base = type === 'ELITE' ? 500 : 100;
     return Math.floor(base * (1 + wave * 0.2));
   },
-  damageGiven: (wave: number) => {
+  damageGiven: (_wave: number) => {
     return 25;
   },
   damageTaken: (wave: number, type: 'BASIC' | 'ELITE') => {
