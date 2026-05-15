@@ -13,6 +13,8 @@ Route::post('/auth/register', [AuthController::class, 'register'])->middleware('
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+
     Route::post('/games/dojo/sessions', [DojoController::class, 'store'])->middleware('throttle:score-submit');
     Route::post('/games/card/sessions', [CardBattlerController::class, 'initSession'])->middleware('throttle:score-submit');
     Route::post('/games/card/moves', [CardBattlerController::class, 'playMove']);
