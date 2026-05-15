@@ -117,7 +117,7 @@ export default function ProfilePage() {
           <div className="flex flex-col items-end gap-3">
             <div className="text-right">
               <div className="text-text-muted text-xs uppercase tracking-widest mb-1">Total Score</div>
-              <ScoreDisplay value={profile.user.total_score} className="text-4xl text-neon-cyan" />
+              <ScoreDisplay score={profile.user.total_score} className="text-4xl text-neon-cyan" />
             </div>
             {bestRank !== null && (
               <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-neon-amber text-sm font-bold shadow-[0_0_10px_rgba(245,158,11,0.2)]">
