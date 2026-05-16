@@ -16,6 +16,8 @@
     "typeRoots": ["./node_modules/@types", "./node_modules"],
     "baseUrl": ".",
     "paths": {
+      "@zenith/ui": ["../../packages/ui/src/index.ts"],
+      "@zenith/ui/*": ["../../packages/ui/src/*"],
       "@ui/*": ["../../packages/ui/src/*"],
       "@sdk/*": ["../../packages/game-sdk/src/*"],
       "@store/*": ["src/store/*"],
