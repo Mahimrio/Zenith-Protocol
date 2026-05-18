@@ -220,6 +220,13 @@ importers:
       react:
         specifier: ^19.0.0
         version: 19.2.5
+      zustand:
+        specifier: ^5.0.0
+        version: 5.0.13(@types/react@19.2.14)(react@19.2.5)(use-sync-external-store@1.6.0(react@19.2.5))
+    devDependencies:
+      '@types/howler':
+        specifier: ^2.2.12
+        version: 2.2.13
 
   packages/ui:
     dependencies:
