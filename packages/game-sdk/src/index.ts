@@ -16,3 +16,6 @@ export type {
 } from './types';
 export { useGameBridge } from './useGameBridge';
 export { gameBus } from './eventBus';
+export { useSoundStore, playSfx } from './store/soundStore';
+export { useSound } from './hooks/useSound';
+export { useMusic } from './hooks/useMusic';

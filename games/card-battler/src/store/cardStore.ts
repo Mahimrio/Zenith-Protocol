@@ -1,11 +1,13 @@
 /**
  * @file cardStore.ts
  * @description Zustand store for Card Battler state.
+ * Integrates playSfx for draw, play, attack, victory, and defeat sounds.
  */
 import { create } from 'zustand';
 import type { CardDefinition, CardInstance } from '../types';
 import { allCards, getRandomDeck } from '../cardDatabase';
 import { GameStatus } from '@sdk/types';
+import { playSfx } from '@sdk/store/soundStore';
 
 interface CardState {
   allCards: CardDefinition[];
@@ -104,6 +106,9 @@ export const useCardStore = create<CardState>((set, get) => ({
     const drawn = deck.slice(0, amount);
     const remainingDeck = deck.slice(amount);
     const newHand = [...hand, ...drawn].slice(0, 7);
+
+    // SFX: card draw sound for player draws
+    if (isPlayer) playSfx('/sounds/card/draw.mp3');
     
     if (isPlayer) {
       return { playerDeck: remainingDeck, playerHand: newHand };
@@ -123,6 +128,9 @@ export const useCardStore = create<CardState>((set, get) => ({
     if (state.playerMana < card.cost) {
       return false;
     }
+
+    // SFX: card play sound
+    playSfx('/sounds/card/play.mp3');
     
     set(s => {
       const newHand = [...s.playerHand];
@@ -143,6 +151,7 @@ export const useCardStore = create<CardState>((set, get) => ({
     });
 
     if (card.type === 'attack' || card.type === 'spell') {
+       playSfx('/sounds/card/attack.mp3');
        get().takeDamage('enemy', card.power);
     }
     return true;
@@ -188,6 +197,7 @@ export const useCardStore = create<CardState>((set, get) => ({
       });
       
       if (toPlay.type === 'attack' || toPlay.type === 'spell') {
+         playSfx('/sounds/card/attack.mp3');
          get().takeDamage('player', toPlay.power);
       }
     }
@@ -205,15 +215,27 @@ export const useCardStore = create<CardState>((set, get) => ({
     }, 2000);
   },
 
-  takeDamage: (target, amount) => set(s => {
-    if (target === 'player') {
-      const hp = Math.max(0, s.playerHp - amount);
-      return { playerHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
-    } else {
-      const hp = Math.max(0, s.enemyHp - amount);
-      return { enemyHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
+  takeDamage: (target, amount) => {
+    set(s => {
+      if (target === 'player') {
+        const hp = Math.max(0, s.playerHp - amount);
+        return { playerHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
+      } else {
+        const hp = Math.max(0, s.enemyHp - amount);
+        return { enemyHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
+      }
+    });
+
+    // SFX: victory/defeat on GAME_OVER
+    const afterState = get();
+    if (afterState.gameStatus === GameStatus.GAME_OVER) {
+      if (target === 'enemy') {
+        playSfx('/sounds/card/victory.mp3');
+      } else {
+        playSfx('/sounds/card/defeat.mp3');
+      }
     }
-  }),
+  },
 
   cleanup: () => {
     if (turnTimeout) {
