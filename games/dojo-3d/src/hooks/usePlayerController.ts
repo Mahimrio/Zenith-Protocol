@@ -1,9 +1,12 @@
 /**
  * @file usePlayerController.ts
  * @description Hook managing player inputs without re-renders.
+ * Integrates SFX (punch, impact, wave-clear) and background music.
  */
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { useSound } from '@sdk/hooks/useSound';
+import { useMusic } from '@sdk/hooks/useMusic';
 
 export const usePlayerController = () => {
   const keys = useRef<{ [key: string]: boolean }>({});
@@ -15,12 +18,19 @@ export const usePlayerController = () => {
     attacking: false
   });
 
+  // ── Sound hooks ────────────────────────────────────────────
+  const { play: playPunch } = useSound('/sounds/dojo/punch.mp3');
+  const { play: playImpact } = useSound('/sounds/dojo/impact.mp3');
+  const { play: playWaveClear } = useSound('/sounds/dojo/wave-clear.mp3');
+  useMusic('/sounds/dojo/dojo-theme.mp3');
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       keys.current[e.code] = true;
       if (e.code === 'Space' && !attackCooldown.current) {
         state.current.attacking = true;
         attackCooldown.current = true;
+        playPunch();
         setTimeout(() => { state.current.attacking = false; }, 100);
         setTimeout(() => { attackCooldown.current = false; }, 500);
       }
@@ -35,7 +45,7 @@ export const usePlayerController = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [playPunch]);
 
   const update = () => {
     const speed = 5;
@@ -55,5 +65,5 @@ export const usePlayerController = () => {
     return state.current;
   };
 
-  return { update };
+  return { update, playImpact, playWaveClear };
 };

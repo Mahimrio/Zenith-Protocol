@@ -22,3 +22,33 @@
     @apply bg-darker text-white antialiased;
   }
 }
+
+/* ── Volume-control range slider ──────────────────────────────── */
+.zenith-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00f5ff;
+  box-shadow: 0 0 6px #00f5ff, 0 0 14px #00f5ff40;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+.zenith-range-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00f5ff;
+  box-shadow: 0 0 6px #00f5ff, 0 0 14px #00f5ff40;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+.zenith-range-slider::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 6px;
+}
+.zenith-range-slider::-moz-range-track {
+  background: transparent;
+  height: 6px;
+}
