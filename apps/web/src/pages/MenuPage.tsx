@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { NeonGrid } from '../components/NeonGrid';
 import { GameGrid } from '../components/GameGrid';
 import { Leaderboard } from '../components/Leaderboard';
+import { DailyChallengeBanner } from '../components/DailyChallengeBanner';
 import { NeonButton } from '@ui/NeonButton';
 import { useNavigate } from 'react-router-dom';
 
@@ -106,6 +107,9 @@ export const MenuPage: React.FC = () => {
         </div>
 
         <GameGrid games={registeredGames} />
+
+        {/* ── Daily Challenges Banner ─────────────────────────────── */}
+        <DailyChallengeBanner />
 
         {/* ── Rankings Section (collapsible) ──────────────────────── */}
         <div className="w-full mt-16">
