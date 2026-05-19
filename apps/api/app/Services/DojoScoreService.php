@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Events\ScoreSubmitted;
+use App\Jobs\CheckAchievements;
 use App\Models\GameSession;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -63,6 +64,9 @@ class DojoScoreService {
         Cache::forget('leaderboard_dojo-3d');
 
         broadcast(new ScoreSubmitted('dojo-3d', $rank, $user, $session->score))->toOthers();
+
+        // Dispatch achievement check after the transaction commits
+        CheckAchievements::dispatch($user->id, $session->id)->afterCommit();
 
         return $session;
     }
