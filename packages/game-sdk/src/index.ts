@@ -19,3 +19,4 @@ export { gameBus } from './eventBus';
 export { useSoundStore, playSfx } from './store/soundStore';
 export { useSound } from './hooks/useSound';
 export { useMusic } from './hooks/useMusic';
+export { isTouchDevice, isMobile, useIsMobile } from './utils/device';
