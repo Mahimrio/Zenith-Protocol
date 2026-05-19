@@ -9,6 +9,7 @@ use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\UserSessionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\AchievementController;
 
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
@@ -29,4 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::get('/profile/sessions', [UserProfileController::class, 'sessions']);
     Route::post('/profile/avatar', [UserProfileController::class, 'updateAvatar']);
+
+    // ── Achievements ──────────────────────────────────────────────
+    Route::get('/achievements', [AchievementController::class, 'index']);
 });

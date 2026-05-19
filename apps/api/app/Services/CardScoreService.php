@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Events\ScoreSubmitted;
+use App\Jobs\CheckAchievements;
 use App\Models\GameSession;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -60,6 +61,9 @@ class CardScoreService {
         Cache::forget('leaderboard_card-battler');
 
         broadcast(new ScoreSubmitted('card-battler', $rank, $user, $session->score))->toOthers();
+
+        // Dispatch achievement check after the transaction commits
+        CheckAchievements::dispatch($user->id, $session->id)->afterCommit();
 
         return $session;
     }
