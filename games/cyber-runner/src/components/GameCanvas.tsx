@@ -10,6 +10,7 @@ import { useObstacles } from '../hooks/useObstacles';
 import { aabbCollides } from '../utils/collision';
 import { useRunnerStore } from '../store/runnerStore';
 import { useInputHandler } from '../hooks/useInputHandler';
+import { TouchControls } from './TouchControls';
 
 export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }> = ({ onGameSpeedUpdate }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -138,5 +139,10 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
     return () => stop();
   }, [gameStatus, start, stop, obsReset]);
 
-  return <canvas ref={canvasRef} className="block w-full h-full bg-[#0a0a0f]" />;
+  return (
+    <>
+      <canvas ref={canvasRef} className="block w-full h-full bg-[#0a0a0f]" />
+      <TouchControls onJump={jump} onSlide={slide} />
+    </>
+  );
 };

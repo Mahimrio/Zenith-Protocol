@@ -2,20 +2,29 @@
  * @file HUD.tsx
  * @description Glassmorphism overlay (health, score, wave).
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 import { useDojoStore } from '../store/dojoStore';
 import { useWaveManager } from '../hooks/useWaveManager';
+import { usePlayerController } from '../hooks/usePlayerController';
 import { GlassCard } from '@ui/GlassCard';
 import { HealthBar } from '@ui/HealthBar';
 import { ScoreDisplay } from '@ui/ScoreDisplay';
+import { VirtualJoystick } from './VirtualJoystick';
+import type { JoystickVector } from './VirtualJoystick';
+import { AttackButton } from './AttackButton';
 
 export const HUD: React.FC = () => {
   const { player, score, combo, enemies } = useDojoStore();
   const { waveState, countdown } = useWaveManager();
+  const { setJoystickVector, triggerTouchAttack } = usePlayerController();
   
   const hudRef = useRef<HTMLDivElement>(null);
   const comboRef = useRef<HTMLDivElement>(null);
+
+  const handleJoystickMove = useCallback((vector: JoystickVector) => {
+    setJoystickVector(vector);
+  }, [setJoystickVector]);
 
   useEffect(() => {
     if (hudRef.current) {
@@ -72,6 +81,10 @@ export const HUD: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* ── Mobile Touch Controls ──────────────────────────────── */}
+      <VirtualJoystick onVectorChange={handleJoystickMove} />
+      <AttackButton onAttack={triggerTouchAttack} />
     </div>
   );
 };
