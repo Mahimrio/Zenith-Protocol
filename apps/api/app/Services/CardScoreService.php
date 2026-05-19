@@ -7,6 +7,7 @@ use App\Events\ScoreSubmitted;
 use App\Jobs\CheckAchievements;
 use App\Models\GameSession;
 use App\Models\User;
+use App\Services\ChallengeCompletionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -64,6 +65,9 @@ class CardScoreService {
 
         // Dispatch achievement check after the transaction commits
         CheckAchievements::dispatch($user->id, $session->id)->afterCommit();
+
+        // Check daily challenges
+        app(ChallengeCompletionService::class)->checkAndComplete($user, $session);
 
         return $session;
     }

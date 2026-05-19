@@ -10,6 +10,7 @@ use App\Http\Controllers\UserSessionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\AchievementController;
+use App\Http\Controllers\DailyChallengeController;
 
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
@@ -33,4 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ── Achievements ──────────────────────────────────────────────
     Route::get('/achievements', [AchievementController::class, 'index']);
+
+    // ── Daily Challenges ──────────────────────────────────────────
+    Route::get('/daily-challenges', [DailyChallengeController::class, 'index']);
 });
