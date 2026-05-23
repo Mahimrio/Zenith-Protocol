@@ -1,11 +1,13 @@
 /**
  * @file useScoreSubmit.ts
  * @description Hook to submit scores to backend game-specific session routes.
+ * Wraps existing submission logic with offline queuing support.
  */
 import { useState, useCallback } from 'react';
 import type { GameResult } from '@sdk/types';
 import { useAuth } from './useAuth';
 import { useAuthStore } from '../store/authStore';
+import { enqueue } from '../lib/offlineQueue';
 
 interface ScoreSubmission {
   endpoint: string;
@@ -88,6 +90,16 @@ export const useScoreSubmit = () => {
     }
     if (!token) {
       throw new Error('Authentication token is required to submit scores.');
+    }
+
+    if (!navigator.onLine) {
+      await enqueue({
+        id: crypto.randomUUID(),
+        endpoint: submission.endpoint,
+        payload: submission.payload,
+      });
+      setIsSubmitting(false);
+      return { queued: true, endpoint: submission.endpoint };
     }
 
     try {

@@ -11,6 +11,7 @@
 import { useEffect, useRef } from 'react';
 import { useLeaderboardStore, type LeaderboardEntry } from '../store/leaderboardStore';
 import { useEcho } from './useEcho';
+import { useAuth } from './useAuth';
 
 /** Payload shape received from the 'score.submitted' broadcast event. */
 interface ScoreSubmittedPayload {
@@ -48,9 +49,12 @@ export const useLeaderboard = () => {
   } = useLeaderboardStore();
 
   const { subscribe, unsubscribe } = useEcho();
+  const { isAuthenticated } = useAuth();
   const currentChannel = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const channelName = `leaderboard.${activeGame}`;
 
     // Fetch fresh data from REST
@@ -83,7 +87,7 @@ export const useLeaderboard = () => {
         currentChannel.current = null;
       }
     };
-  }, [activeGame, fetchLeaderboard, insertOrUpdateEntry, subscribe, unsubscribe]);
+  }, [activeGame, fetchLeaderboard, insertOrUpdateEntry, subscribe, unsubscribe, isAuthenticated]);
 
   return { entries, myRank, myScore, activeGame, isLoading, lastUpdated };
 };
