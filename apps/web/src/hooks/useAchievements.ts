@@ -18,10 +18,13 @@ export const useAchievements = () => {
   const { fetchAchievements, unlockAchievement } = useAchievementStore();
   const { subscribe, unsubscribe } = useEcho();
   const userId = useAuthStore((s) => s.user?.id);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   useEffect(() => {
-    fetchAchievements();
-  }, [fetchAchievements]);
+    if (isAuthenticated) {
+      fetchAchievements();
+    }
+  }, [isAuthenticated, fetchAchievements]);
 
   useEffect(() => {
     if (!userId) return;
