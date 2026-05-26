@@ -11,7 +11,10 @@ import { TurnIndicator } from './components/TurnIndicator';
 import { GameStatus } from '@sdk/types';
 
 const CardBattlerGame: React.FC = () => {
-  const { startGame, gameStatus, currentTurn, score, cardsPlayed, turnsSurvived } = useCardStore();
+  const { 
+    startGame, gameStatus, currentTurn, score, cardsPlayed, turnsSurvived,
+    spectatorMode, toggleSpectatorMode, playerHand, playerMana, playCard, endTurn
+  } = useCardStore();
   const { emitGameOver, requestPause } = useGameBridge('card-battler');
 
   useEffect(() => {
@@ -30,9 +33,30 @@ const CardBattlerGame: React.FC = () => {
           cardsPlayed
         },
         completedAt: new Date().toISOString()
-      });
+      }, spectatorMode);
     }
-  }, [gameStatus, score, turnsSurvived, cardsPlayed, emitGameOver]);
+  }, [gameStatus, score, turnsSurvived, cardsPlayed, emitGameOver, spectatorMode]);
+
+  // Autoplay loop when spectator mode is active
+  useEffect(() => {
+    if (gameStatus !== GameStatus.PLAYING || currentTurn !== 'player' || !spectatorMode) {
+      return;
+    }
+
+    const playableCards = playerHand.filter(card => card.cost <= playerMana);
+
+    const timer = setTimeout(() => {
+      if (playableCards.length > 0) {
+        const sorted = [...playableCards].sort((a, b) => b.cost - a.cost);
+        const cardToPlay = sorted[0];
+        playCard(cardToPlay.instanceId);
+      } else {
+        endTurn();
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [gameStatus, currentTurn, spectatorMode, playerHand, playerMana, playCard, endTurn]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -48,6 +72,21 @@ const CardBattlerGame: React.FC = () => {
 
   return (
     <div className="w-full h-full relative bg-bg-primary overflow-hidden font-sans pt-16">
+      {/* Spectator Mode Control */}
+      <div className="absolute top-20 right-6 z-40">
+        <button
+          onClick={toggleSpectatorMode}
+          className={`px-4 py-2 rounded-xl border backdrop-blur-md font-mono text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2 cursor-pointer select-none pointer-events-auto ${
+            spectatorMode
+              ? 'bg-neon-cyan/20 border-neon-cyan text-neon-cyan shadow-[0_0_15px_rgba(0,245,255,0.4)]'
+              : 'bg-glass border-border-glass text-text-muted hover:text-text-primary hover:border-text-primary'
+          }`}
+        >
+          <span className={`w-2 h-2 rounded-full ${spectatorMode ? 'bg-neon-cyan animate-pulse shadow-[0_0_8px_#00f5ff]' : 'bg-text-muted'}`} />
+          {spectatorMode ? 'Spectating AI' : 'Spectate Game'}
+        </button>
+      </div>
+
       <GameBoard />
       <PlayerHand />
       <TurnIndicator currentTurn={currentTurn} />

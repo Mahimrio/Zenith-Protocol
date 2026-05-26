@@ -1,0 +1,102 @@
+import React, { useRef, useEffect } from 'react';
+import { use{{GAME_CAPITALIZED_SLUG}}Store } from '../store/store';
+import { useGameLoop } from '../hooks/useGameLoop';
+
+export const GameCanvas: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { incrementScore, playerPosition, updatePlayerPosition } = use{{GAME_CAPITALIZED_SLUG}}Store();
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    updatePlayerPosition(x, y);
+  };
+
+  const { start, stop } = useGameLoop((deltaTime) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw grid lines
+    ctx.strokeStyle = 'rgba(0, 245, 255, 0.05)';
+    ctx.lineWidth = 1;
+    const gridSize = 40;
+    for (let x = 0; x < canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+    // Draw an orb to collect
+    const orbX = canvas.width / 2;
+    const orbY = canvas.height / 2;
+    const orbRadius = 15 + Math.sin(Date.now() / 200) * 3;
+
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, orbRadius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(139, 92, 246, 0.6)';
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#8b5cf6';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Check collision between player and orb
+    const dx = playerPosition.x - orbX;
+    const dy = playerPosition.y - orbY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < orbRadius + 20) {
+      incrementScore(Math.floor(deltaTime * 100) + 1);
+    }
+
+    // Draw player
+    ctx.beginPath();
+    ctx.arc(playerPosition.x, playerPosition.y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = '#00f5ff';
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#00f5ff';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resize = () => {
+      canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
+      canvas.height = canvas.parentElement?.clientHeight || window.innerHeight;
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    start();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      stop();
+    };
+  }, [start, stop]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      onPointerMove={handlePointerMove}
+      className="w-full h-full block touch-none cursor-crosshair"
+    />
+  );
+};

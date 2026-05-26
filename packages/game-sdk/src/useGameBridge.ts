@@ -85,14 +85,14 @@ export const useGameBridge = (gameId: string) => {
     };
   }, [gameId]);
 
-  const emitGameOver = useCallback((result: GameResultPayload) => {
+  const emitGameOver = useCallback((result: GameResultPayload, spectatorMode = false) => {
     const fullResult = { ...result, gameId } as GameResult;
     setCurrentStatus(GameStatus.GAME_OVER);
     gameBus.emit('GAME_OVER', fullResult);
 
     const token = localStorage.getItem('token');
     const submission = buildScoreSubmission(fullResult);
-    if (!token || !submission) {
+    if (!token || !submission || spectatorMode) {
       return;
     }
 

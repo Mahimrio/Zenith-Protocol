@@ -1,0 +1,35 @@
+import { useEffect, useRef } from 'react';
+
+export const usePlayerController = () => {
+  const keys = useRef({
+    KeyW: false,
+    KeyS: false,
+    KeyA: false,
+    KeyD: false,
+    Space: false
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code in keys.current) {
+        keys.current[e.code as keyof typeof keys.current] = true;
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code in keys.current) {
+        keys.current[e.code as keyof typeof keys.current] = false;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  return keys;
+};

@@ -1,0 +1,45 @@
+import React from 'react';
+import { use{{GAME_CAPITALIZED_SLUG}}Store } from '../store/store';
+import { GlassCard } from '@ui/GlassCard';
+import { ScoreDisplay } from '@ui/ScoreDisplay';
+
+export const HUD: React.FC = () => {
+  const { score, timeLeft, endGame } = use{{GAME_CAPITALIZED_SLUG}}Store();
+
+  return (
+    <div className="absolute inset-x-0 top-0 p-6 flex justify-between items-start z-10 pointer-events-none">
+      <GlassCard className="p-4 pointer-events-auto border-neon-cyan shadow-[0_0_8px_rgba(0,245,255,0.2)]">
+        <h2 className="text-neon-cyan font-mono tracking-widest text-sm uppercase">
+          {{GAME_NAME}}
+        </h2>
+      </GlassCard>
+
+      <div className="flex gap-4">
+        <GlassCard className="px-6 py-4 pointer-events-auto flex flex-col items-center border-neon-purple shadow-[0_0_8px_rgba(139,92,246,0.2)]">
+          <span className="text-text-muted font-mono tracking-widest text-xs mb-1 uppercase">
+            Time Left
+          </span>
+          <span className="text-neon-purple font-mono font-bold text-2xl">
+            {timeLeft}s
+          </span>
+        </GlassCard>
+
+        <GlassCard className="px-8 py-4 pointer-events-auto flex flex-col items-center border-neon-cyan shadow-[0_0_8px_rgba(0,245,255,0.2)]">
+          <span className="text-text-muted font-mono tracking-widest text-xs mb-1 uppercase">
+            Score
+          </span>
+          <ScoreDisplay score={score} animated />
+        </GlassCard>
+      </div>
+
+      <GlassCard className="p-4 pointer-events-auto border-neon-amber hover:border-red-500 transition-colors duration-300">
+        <button 
+          onClick={endGame}
+          className="text-neon-amber hover:text-red-500 font-mono text-sm uppercase tracking-wider cursor-pointer"
+        >
+          Forfeit
+        </button>
+      </GlassCard>
+    </div>
+  );
+};

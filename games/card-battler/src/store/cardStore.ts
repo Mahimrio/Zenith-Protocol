@@ -33,6 +33,9 @@ interface CardState {
   cardsPlayed: number;
   turnsSurvived: number;
 
+  spectatorMode: boolean;
+  toggleSpectatorMode: () => void;
+
   startGame: () => void;
   drawCard: (target?: 'player' | 'enemy', amount?: number) => void;
   playCard: (instanceId: string, targetId?: string) => boolean;
@@ -70,6 +73,9 @@ export const useCardStore = create<CardState>((set, get) => ({
   score: 0,
   cardsPlayed: 0,
   turnsSurvived: 0,
+  spectatorMode: false,
+
+  toggleSpectatorMode: () => set(state => ({ spectatorMode: !state.spectatorMode })),
 
   startGame: () => {
     set({
@@ -90,7 +96,8 @@ export const useCardStore = create<CardState>((set, get) => ({
       turnNumber: 1,
       score: 0,
       cardsPlayed: 0,
-      turnsSurvived: 0
+      turnsSurvived: 0,
+      spectatorMode: false
     });
     get().drawCard('player', 4);
     get().drawCard('enemy', 4);

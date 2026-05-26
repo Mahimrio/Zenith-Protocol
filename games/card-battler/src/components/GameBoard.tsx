@@ -14,11 +14,24 @@ export const GameBoard: React.FC = () => {
     playerBoard, enemyBoard, 
     playerHp, enemyHp, 
     playerMana, playerMaxMana,
-    currentTurn, endTurn
+    currentTurn, endTurn,
+    enemyHand, spectatorMode
   } = useCardStore();
 
   return (
     <div className="w-full h-full flex flex-col pt-4">
+      {/* Enemy Hand (Spectator Reveal Zone) */}
+      <div className="w-full flex justify-center gap-2 px-8 py-2 min-h-[90px] border-b border-border-glass bg-black/20 z-30">
+        {enemyHand.map(card => {
+          const cardToShow = spectatorMode ? { ...card, isFlipped: false } : card;
+          return (
+            <div key={card.instanceId} className="transform scale-75 origin-top transition-all duration-300">
+              <Card card={cardToShow} location="hand" />
+            </div>
+          );
+        })}
+      </div>
+
       {/* Enemy Zone */}
       <div className="flex-1 flex flex-col justify-center items-center relative">
         <div className="absolute top-4 w-72">
@@ -49,9 +62,9 @@ export const GameBoard: React.FC = () => {
         <div className="absolute bottom-32 right-8 flex flex-col items-end gap-6">
            <ManaBar current={playerMana} max={playerMaxMana} />
            <NeonButton 
-             variant={currentTurn === 'player' ? 'primary' : 'ghost'} 
+             variant={currentTurn === 'player' && !spectatorMode ? 'primary' : 'ghost'} 
              onClick={endTurn}
-             disabled={currentTurn !== 'player'}
+             disabled={currentTurn !== 'player' || spectatorMode}
              className="w-full tracking-widest uppercase font-bold"
            >
              END TURN
