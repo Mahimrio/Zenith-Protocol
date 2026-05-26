@@ -1,0 +1,31 @@
+import React from 'react';
+import { use{{GAME_CAPITALIZED_SLUG}}Store } from '../store/store';
+import { GlassCard } from '@ui/GlassCard';
+
+export const GameBoard: React.FC = () => {
+  const { targets, clickTarget } = use{{GAME_CAPITALIZED_SLUG}}Store();
+
+  return (
+    <div className="w-full h-full relative bg-[radial-gradient(ellipse_at_center,rgba(16,16,26,1)_0%,rgba(10,10,15,1)_100%)]">
+      {/* Animated grid overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,245,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,245,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
+
+      {targets.map((target) => (
+        <button
+          key={target.id}
+          onClick={() => clickTarget(target.id)}
+          className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 group focus:outline-none"
+          style={{ left: `${target.x}%`, top: `${target.y}%` }}
+        >
+          <GlassCard 
+            className="p-4 flex flex-col items-center justify-center border-neon-cyan shadow-[0_0_12px_rgba(0,245,255,0.1)] group-hover:border-neon-purple group-hover:shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+          >
+            <span className="text-neon-cyan font-bold font-mono text-xl group-hover:text-neon-purple transition-colors duration-300 animate-pulse">
+              +{target.value * 10}
+            </span>
+          </GlassCard>
+        </button>
+      ))}
+    </div>
+  );
+};

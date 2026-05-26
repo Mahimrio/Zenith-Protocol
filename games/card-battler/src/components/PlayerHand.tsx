@@ -11,7 +11,7 @@ import { useCardStore } from '../store/cardStore';
 import { useIsMobile } from '@sdk/utils/device';
 
 export const PlayerHand: React.FC = () => {
-  const { playerHand, playerMana, currentTurn, playCard } = useCardStore();
+  const { playerHand, playerMana, currentTurn, playCard, spectatorMode } = useCardStore();
   const isMobile = useIsMobile();
   const cardRefs = useRef<(CardHandle | null)[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,12 +51,14 @@ export const PlayerHand: React.FC = () => {
   };
 
   const handlePlayCard = async (card: CardInstance, index: number) => {
-    if (currentTurn !== 'player' || playerMana < card.cost) {
-      const flash = document.createElement('div');
-      flash.className = 'fixed inset-0 bg-red-500/20 pointer-events-none z-[100] transition-opacity duration-300';
-      document.body.appendChild(flash);
-      setTimeout(() => flash.style.opacity = '0', 50);
-      setTimeout(() => flash.remove(), 300);
+    if (spectatorMode || currentTurn !== 'player' || playerMana < card.cost) {
+      if (!spectatorMode) {
+        const flash = document.createElement('div');
+        flash.className = 'fixed inset-0 bg-red-500/20 pointer-events-none z-[100] transition-opacity duration-300';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.style.opacity = '0', 50);
+        setTimeout(() => flash.remove(), 300);
+      }
       return;
     }
 
@@ -73,7 +75,7 @@ export const PlayerHand: React.FC = () => {
   };
 
   const handleDragPlay = async (card: CardInstance, index: number) => {
-    if (currentTurn !== 'player' || playerMana < card.cost) return;
+    if (spectatorMode || currentTurn !== 'player' || playerMana < card.cost) return;
     const handle = cardRefs.current[index];
     if (handle) {
       await handle.playCard({ x: 0, y: -200 });
@@ -120,7 +122,7 @@ export const PlayerHand: React.FC = () => {
                 ref={(el) => { cardRefs.current[index] = el; }}
                 card={card}
                 location="hand"
-                isPlayable={currentTurn === 'player' && playerMana >= card.cost}
+                isPlayable={!spectatorMode && currentTurn === 'player' && playerMana >= card.cost}
                 onClick={() => handlePlayCard(card, index)}
                 onDragPlay={() => handleDragPlay(card, index)}
               />
@@ -157,7 +159,7 @@ export const PlayerHand: React.FC = () => {
               ref={(el) => { cardRefs.current[index] = el; }}
               card={card}
               location="hand"
-              isPlayable={currentTurn === 'player' && playerMana >= card.cost}
+              isPlayable={!spectatorMode && currentTurn === 'player' && playerMana >= card.cost}
               onClick={() => handlePlayCard(card, index)}
               onDragPlay={() => handleDragPlay(card, index)}
             />

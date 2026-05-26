@@ -1,0 +1,90 @@
+import { create } from 'zustand';
+import { GameStatus } from '@sdk/types';
+
+interface Target {
+  id: string;
+  x: number;
+  y: number;
+  value: number;
+}
+
+interface {{GAME_CAPITALIZED_SLUG}}State {
+  gameStatus: GameStatus;
+  score: number;
+  timeLeft: number;
+  targets: Target[];
+  startGame: () => void;
+  endGame: () => void;
+  clickTarget: (id: string) => void;
+  tickTime: () => void;
+  cleanup: () => void;
+}
+
+let timerInterval: ReturnType<typeof setInterval> | null = null;
+
+const generateRandomTarget = (): Target => ({
+  id: Math.random().toString(36).slice(2, 9),
+  x: 10 + Math.random() * 80, // % width
+  y: 20 + Math.random() * 60, // % height
+  value: Math.floor(Math.random() * 3) + 1
+});
+
+export const use{{GAME_CAPITALIZED_SLUG}}Store = create<{{GAME_CAPITALIZED_SLUG}}State>((set, get) => ({
+  gameStatus: GameStatus.IDLE,
+  score: 0,
+  timeLeft: 30,
+  targets: [],
+
+  startGame: () => {
+    if (timerInterval) clearInterval(timerInterval);
+
+    set({
+      gameStatus: GameStatus.PLAYING,
+      score: 0,
+      timeLeft: 30,
+      targets: Array.from({ length: 5 }, generateRandomTarget)
+    });
+
+    timerInterval = setInterval(() => {
+      get().tickTime();
+    }, 1000);
+  },
+
+  endGame: () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    set({ gameStatus: GameStatus.GAME_OVER });
+  },
+
+  clickTarget: (id) => set((state) => {
+    const target = state.targets.find(t => t.id === id);
+    if (!target) return state;
+    
+    const newTargets = state.targets.filter(t => t.id !== id);
+    newTargets.push(generateRandomTarget());
+    
+    return {
+      score: state.score + target.value * 10,
+      targets: newTargets
+    };
+  }),
+
+  tickTime: () => {
+    const { timeLeft, endGame } = get();
+    if (timeLeft <= 1) {
+      endGame();
+    } else {
+      set({ timeLeft: timeLeft - 1 });
+    }
+  },
+
+  cleanup: () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    set({ gameStatus: GameStatus.IDLE, targets: [] });
+  }
+}));

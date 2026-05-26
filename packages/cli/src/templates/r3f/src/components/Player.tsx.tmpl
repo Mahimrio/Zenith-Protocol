@@ -1,0 +1,66 @@
+import React, { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { RigidBody } from '@react-three/rapier';
+import type { RapierRigidBody } from '@react-three/rapier';
+import { usePlayerController } from '../hooks/usePlayerController';
+import { use{{GAME_CAPITALIZED_SLUG}}Store } from '../store/store';
+import * as THREE from 'three';
+
+export const Player: React.FC = () => {
+  const rbRef = useRef<RapierRigidBody>(null);
+  const keysRef = usePlayerController();
+  const { updatePlayerPosition, incrementScore } = use{{GAME_CAPITALIZED_SLUG}}Store();
+  const speed = 6;
+
+  useFrame((_state, delta) => {
+    if (!rbRef.current) return;
+
+    // Movement vector
+    const move = new THREE.Vector3(0, 0, 0);
+    const keys = keysRef.current;
+
+    if (keys.KeyW) move.z -= 1;
+    if (keys.KeyS) move.z += 1;
+    if (keys.KeyA) move.x -= 1;
+    if (keys.KeyD) move.x += 1;
+
+    move.normalize().multiplyScalar(speed);
+
+    // Apply velocity
+    const velocity = rbRef.current.linvel();
+    rbRef.current.setLinvel({
+      x: move.x,
+      y: keys.Space && Math.abs(velocity.y) < 0.05 ? 5 : velocity.y,
+      z: move.z
+    }, true);
+
+    // Track position in Zustand store
+    const position = rbRef.current.translation();
+    updatePlayerPosition([position.x, position.y, position.z]);
+
+    // Give points for moving
+    if (move.length() > 0) {
+      incrementScore(Math.floor(delta * 10));
+    }
+  });
+
+  return (
+    <RigidBody
+      ref={rbRef}
+      colliders="ball"
+      position={[0, 1, 0]}
+      enabledRotations={[false, false, false]}
+    >
+      <mesh castShadow receiveShadow>
+        <sphereGeometry args={[0.5, 32, 32]} />
+        <meshStandardMaterial 
+          color="#00f5ff" 
+          emissive="#00f5ff" 
+          emissiveIntensity={0.4} 
+          roughness={0.2}
+          metalness={0.8}
+        />
+      </mesh>
+    </RigidBody>
+  );
+};

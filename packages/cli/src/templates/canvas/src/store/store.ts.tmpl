@@ -1,0 +1,33 @@
+import { create } from 'zustand';
+import { GameStatus } from '@sdk/types';
+
+interface {{GAME_CAPITALIZED_SLUG}}State {
+  gameStatus: GameStatus;
+  score: number;
+  playerPosition: { x: number; y: number };
+  startGame: () => void;
+  endGame: () => void;
+  incrementScore: (amount: number) => void;
+  updatePlayerPosition: (x: number, y: number) => void;
+  cleanup: () => void;
+}
+
+export const use{{GAME_CAPITALIZED_SLUG}}Store = create<{{GAME_CAPITALIZED_SLUG}}State>((set) => ({
+  gameStatus: GameStatus.IDLE,
+  score: 0,
+  playerPosition: { x: 100, y: 100 },
+
+  startGame: () => set({
+    gameStatus: GameStatus.PLAYING,
+    score: 0,
+    playerPosition: { x: 100, y: 100 }
+  }),
+
+  endGame: () => set({ gameStatus: GameStatus.GAME_OVER }),
+
+  incrementScore: (amount) => set((state) => ({ score: state.score + amount })),
+
+  updatePlayerPosition: (x, y) => set({ playerPosition: { x, y } }),
+
+  cleanup: () => set({ gameStatus: GameStatus.IDLE })
+}));

@@ -1,0 +1,18 @@
+/**
+ * @file types.ts
+ * @description Type definitions for the {{GAME_NAME}} module.
+ */
+
+export interface {{GAME_CAPITALIZED_SLUG}}Metadata {
+  // Add game-specific metrics here. Avoid generic Record<string, unknown> records.
+  score: number;
+  completedAt: string;
+}
+
+export interface {{GAME_CAPITALIZED_SLUG}}GameResult {
+  gameId: '{{GAME_SLUG}}';
+  userId?: string;
+  score: number;
+  metadata: {{GAME_CAPITALIZED_SLUG}}Metadata;
+  completedAt: string;
+}

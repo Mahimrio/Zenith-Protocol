@@ -1,0 +1,52 @@
+import React, { useEffect } from 'react';
+import { use{{GAME_CAPITALIZED_SLUG}}Store } from './store/store';
+import { useGameBridge } from '@sdk/useGameBridge';
+import { GameStatus } from '@sdk/types';
+import { HUD } from './components/HUD';
+import { GameCanvas } from './components/GameCanvas';
+
+const {{GAME_CAPITALIZED_SLUG}}Game: React.FC = () => {
+  const { startGame, gameStatus, score, cleanup } = use{{GAME_CAPITALIZED_SLUG}}Store();
+  const { emitGameOver, requestPause } = useGameBridge('{{GAME_SLUG}}');
+
+  useEffect(() => {
+    startGame();
+    return () => {
+      cleanup();
+    };
+  }, [startGame, cleanup]);
+
+  useEffect(() => {
+    if (gameStatus === GameStatus.GAME_OVER) {
+      emitGameOver({
+        score,
+        metadata: {
+          score,
+          completedAt: new Date().toISOString()
+        },
+        completedAt: new Date().toISOString()
+      });
+    }
+  }, [gameStatus, score, emitGameOver]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Escape' && gameStatus === GameStatus.PLAYING) {
+        requestPause();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameStatus, requestPause]);
+
+  if (gameStatus === GameStatus.IDLE) return null;
+
+  return (
+    <div className="w-full h-full relative overflow-hidden bg-[#0a0a0f]">
+      <HUD />
+      <GameCanvas />
+    </div>
+  );
+};
+
+export default {{GAME_CAPITALIZED_SLUG}}Game;
