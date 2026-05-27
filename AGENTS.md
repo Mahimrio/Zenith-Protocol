@@ -233,16 +233,16 @@ Zenith Protocol/
 | `components/ChallengeCard.tsx` | GlassCard, colored left border per game, progress bar, GSAP "COMPLETED" stamp |
 | `components/OfflineBanner.tsx` | GSAP amber/green banner, pending count, auto-shows when offline |
 
-> ⚠️ KNOWN BUG (unfixed): `GameOverModal` and `PauseMenu` exist but are NOT yet
-> mounted in `GameLayout.tsx`. Fix Prompt 1 in ZenithProtocol_Bug_Fix_Prompts.md
-> addresses this. Until fixed, game over screen does not appear.
+> ✅ FIXED: `GameOverModal` and `PauseMenu` are now properly imported, subscribed
+> to `gameBus` events (`GAME_OVER`, `PAUSE_REQUESTED`, `RESUME_REQUESTED`),
+> and conditionally rendered inside `GameLayout.tsx` (see `FIX_001_GameLayout_GameOver_Pause.md`).
 
 ### Layouts
 
 | File | Purpose |
 |------|---------|
 | `layouts/MainLayout.tsx` | Persistent shell: Navbar + Outlet |
-| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module via pluginLoader. ⚠️ GameOverModal + PauseMenu not yet mounted here — see bug fix. |
+| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module via pluginLoader. Renders `GameOverModal` on `GAME_OVER` and `PauseMenu` on `PAUSE_REQUESTED`. |
 
 ### Lib / Worker
 
@@ -583,7 +583,7 @@ Game Session → ScoreService::validateAndSave()
 
 | Priority | Bug | File to fix |
 |----------|-----|-------------|
-| P0 | GameOverModal + PauseMenu never mounted | `GameLayout.tsx` |
+| ~~P0~~ **FIXED** | ~~GameOverModal + PauseMenu never mounted~~ | ~~`GameLayout.tsx`~~ |
 | P0 | Dojo score formula mismatch → 422 rejected | `DojoScoreService.php` |
 | P0 | Card score formula mismatch → 422 rejected | `CardScoreService.php` |
 | P1 | Logout never revokes server token | `authStore.ts` |
