@@ -2,7 +2,7 @@
 
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
-> **Last updated:** 2026-05-19
+> **Last updated:** 2026-05-27
 
 ---
 
@@ -19,28 +19,31 @@ When a new feature request comes in:
 
 | Layer | Tech |
 |-------|------|
-| Frontend | React 18, Vite, TypeScript (strict), Tailwind CSS v4, Zustand, GSAP 3, React Three Fiber + Rapier, React Router v6 |
-| Backend | Laravel 13, PHP 8.3, SQLite (dev), Laravel Sanctum, Pest, Laravel Reverb |
+| Frontend | React 18, Vite, TypeScript (strict), Tailwind CSS v3, Zustand, GSAP 3, React Three Fiber + Rapier, React Router v6 |
+| Backend | Laravel 11, PHP 8.3, MySQL, Laravel Sanctum, Pest, Laravel Reverb |
 | Monorepo | pnpm workspaces: apps/web, apps/api, games/*, packages/* |
+
+> ⚠️ Stack correction: Laravel 11 (not 13), Tailwind v3 (not v4), MySQL (not SQLite)
 
 ### MONOREPO WIRING — CONFIRMED WORKING
 
 - Root `dev:web` → `pnpm -C apps/web dev`
 - Root `dev:api` → `cd apps/api && php artisan serve --host=127.0.0.1 --port=8000`
 - `apps/web` package name is `"web"` (was fixed from `"web_temp"`)
-- All sub-packages under `@zenith/` namespace: `@zenith/game-sdk`, `@zenith/ui`, `@zenith/dojo-3d`, `@zenith/card-battler`, `@zenith/cyber-runner`
+- All sub-packages under `@zenith/` namespace: `@zenith/game-sdk`, `@zenith/ui`, `@zenith/dojo-3d`, `@zenith/card-battler`, `@zenith/cyber-runner`, `@zenith/cli`
 - Heavy libs (three, @react-three/*, gsap) are peerDependencies — they hoist from the host app
 - Game modules depend on `@zenith/game-sdk` via `workspace:*`
 
 ### TYPESCRIPT & VITE — CONFIRMED WORKING (0 build errors)
 
-- `tsconfig.app.json`: `"ignoreDeprecations": "6.0"`, NO `"types"` restriction, `"jsxImportSource": "react"`, `"typeRoots"` configured, three path alias added
-- `vite.config.ts`: `/api` proxy + `dedupe: [react, react-dom, three, gsap, zustand]`
+- `tsconfig.app.json`: `"ignoreDeprecations": "6.0"`, NO `"types"` restriction, `"jsxImportSource": "react"`, `"typeRoots"` configured, three + howler path aliases added
+- `vite.config.ts`: `/api` proxy + `dedupe: [react, react-dom, three, gsap, zustand]` + `vite-plugin-pwa`
 - Theme tokens defined in `apps/web/src/index.css`
 - `GameStatus`: const object + derived type (enum banned by `erasableSyntaxOnly`)
 - All type-only imports use `import type` (`verbatimModuleSyntax`)
 - All unused params prefixed with `_` (`noUnusedLocals` enforced)
 - `@types/react` + `@types/react-dom` installed at workspace root
+- `@types/howler` installed in `packages/game-sdk/package.json`
 - `pluginLoader.ts`: lazy components pre-created outside render loop
 
 ---
@@ -62,6 +65,7 @@ When a new feature request comes in:
 
 Glassmorphism: `backdrop-blur-md + bg-glass + border-glass + rounded-xl`
 Custom CSS classes in `index.css`: `bg-bg-primary`, `text-neon-cyan`, `border-border-glass` — use these, do not redefine.
+`.zenith-range-slider` CSS class exists for neon-themed volume sliders.
 
 ---
 
@@ -74,7 +78,7 @@ Custom CSS classes in `index.css`: `bg-bg-primary`, `text-neon-cyan`, `border-bo
 - Laravel: Form Requests → validation, Services → logic, Repositories → DB queries, Resources → API responses.
 - Never trust the frontend for scores or moves.
 - All private API routes protected by `auth:sanctum` middleware.
-- Laravel 11+: register route files in `bootstrap/app.php` (already done).
+- Laravel 11: register route files in `bootstrap/app.php` (already done).
 
 ---
 
@@ -83,9 +87,9 @@ Custom CSS classes in `index.css`: `bg-bg-primary`, `text-neon-cyan`, `border-bo
 `GameResult` is a discriminated union — DO NOT use generic metadata:
 
 ```typescript
-DojoGameResult   { gameId: 'dojo-3d',       metadata: DojoMetadata }
-RunnerGameResult { gameId: 'cyber-runner',   metadata: RunnerMetadata }
-CardBattlerGameResult { gameId: 'card-battler', metadata: CardBattlerMetadata }
+DojoGameResult        { gameId: 'dojo-3d',       metadata: DojoMetadata }
+RunnerGameResult      { gameId: 'cyber-runner',   metadata: RunnerMetadata }
+CardBattlerGameResult { gameId: 'card-battler',   metadata: CardBattlerMetadata }
 GameResultPayload = Omit<GameResult, 'gameId'>  // used by bridge consumers
 ```
 
@@ -101,57 +105,63 @@ When writing new code that calls `emitGameOver()`, use `GameResultPayload`. Neve
 Zenith Protocol/
 ├── AGENTS.md                    ← THIS FILE (auto-loaded context)
 ├── CODEBASE_SCAN.md             ← Full scan reference
-├── ACHIEVEMENTS_SYSTEM.md       ← Achievement system docs
 ├── package.json                 ← Root workspace (pnpm)
 ├── pnpm-workspace.yaml
 │
 ├── apps/
 │   ├── web/                     ← React 18 + Vite + TypeScript frontend
 │   │   ├── package.json         ← name: "web"
-│   │   ├── vite.config.ts       ← /api proxy, dedupe, manualChunks
+│   │   ├── vite.config.ts       ← /api proxy, dedupe, manualChunks, vite-plugin-pwa
 │   │   ├── tsconfig.app.json    ← strict, verbatimModuleSyntax
-│   │   ├── tsconfig.node.json
-│   │   ├── tsconfig.json
 │   │   ├── .env                 ← VITE_API_URL=/api, VITE_REVERB_*
 │   │   ├── index.html
 │   │   └── src/
-│   │       ├── main.tsx          ← Entry: registers 3 games, RouterProvider
-│   │       ├── App.tsx           ← Root: <AchievementToast /> + <Outlet />
-│   │       ├── index.css         ← Tailwind + theme tokens + .zenith-range-slider
-│   │       ├── env.d.ts          ← Vite env var types
-│   │       ├── router/index.tsx  ← createBrowserRouter
-│   │       ├── components/       ← 13 components (see below)
-│   │       ├── hooks/            ← 6 hooks (see below)
+│   │       ├── main.tsx          ← Entry: registers 3 games, RouterProvider, registerSW
+│   │       ├── App.tsx           ← Root: <OfflineBanner /> + <AchievementToast /> + <Outlet />
+│   │       ├── index.css         ← Tailwind v3 + theme tokens + .zenith-range-slider
+│   │       ├── env.d.ts          ← Vite + vite-plugin-pwa/client env var types
+│   │       ├── router/
+│   │       │   └── index.tsx     ← createBrowserRouter
+│   │       ├── components/       ← 17 components (see below)
+│   │       ├── hooks/            ← 8 hooks (see below)
 │   │       ├── layouts/          ← MainLayout, GameLayout
-│   │       ├── lib/              ← axios.ts, pluginLoader.ts
+│   │       ├── lib/              ← axios.ts, pluginLoader.ts, offlineQueue.ts
+│   │       ├── worker/           ← syncWorker.ts
 │   │       ├── pages/            ← MenuPage, LoginPage, RegisterPage, ProfilePage
-│   │       └── store/            ← authStore, leaderboardStore, gameStore, achievementStore
+│   │       ├── store/            ← authStore, leaderboardStore, gameStore,
+│   │       │                        achievementStore, challengeStore
+│   │       └── public/
+│   │           ├── icons/        ← pwa-192.png, pwa-512.png
+│   │           └── sounds/       ← dojo/, runner/, card/, ui/ (.gitkeep placeholders)
 │   │
-│   └── api/                     ← Laravel 13 backend (PHP 8.3)
+│   └── api/                     ← Laravel 11 backend (PHP 8.3)
 │       ├── composer.json        ← platform: php 8.3.0
 │       ├── bootstrap/app.php    ← registers api.php, channels.php
-│       ├── bootstrap/providers.php
-│       ├── .env                 ← DB=sqlite, BROADCAST=reverb
+│       ├── .env                 ← DB=mysql, BROADCAST=reverb
 │       ├── artisan
 │       ├── routes/
 │       │   ├── api.php          ← All API routes (see below)
 │       │   ├── channels.php     ← Broadcasting channels
-│       │   ├── console.php
+│       │   ├── console.php      ← challenges:generate scheduled at 23:00 UTC
 │       │   └── web.php
 │       ├── database/
-│       │   ├── migrations/      ← 2 achievement migrations + existing
-│       │   └── seeders/DatabaseSeeder.php  ← 12 achievements + users + sessions
+│       │   ├── migrations/      ← users, game_sessions, dojo/card/runner sessions,
+│       │   │                        achievements, user_achievements,
+│       │   │                        daily_challenges, user_challenges
+│       │   └── seeders/
+│       │       └── DatabaseSeeder.php  ← 12 achievements + users + sessions
 │       └── app/
 │           ├── Http/
-│           │   ├── Controllers/  ← 8 controllers
+│           │   ├── Controllers/  ← 9 controllers (see below)
 │           │   ├── Requests/     ← 5 form requests
 │           │   └── Resources/    ← 5 API resources
-│           ├── Models/           ← 7 models
+│           ├── Models/           ← 9 models (see below)
 │           ├── Repositories/     ← 3 files
-│           ├── Services/         ← 4 score services + AchievementService
-│           ├── Jobs/             ← CheckAchievements
-│           ├── Events/           ← ScoreSubmitted, AchievementUnlocked
-│           └── Providers/AppServiceProvider.php
+│           ├── Services/         ← 6 services (see below)
+│           ├── Jobs/             ← CheckAchievements.php
+│           ├── Events/           ← ScoreSubmitted.php, AchievementUnlocked.php
+│           └── Console/
+│               └── Commands/     ← GenerateDailyChallenges.php
 │
 ├── games/
 │   ├── dojo-3d/                 ← @zenith/dojo-3d — R3F + Rapier 3D survival
@@ -160,7 +170,8 @@ Zenith Protocol/
 │
 └── packages/
     ├── game-sdk/                ← @zenith/game-sdk — shared types, eventBus, sound
-    └── ui/                      ← @zenith/ui — GlassCard, NeonButton, etc.
+    ├── ui/                      ← @zenith/ui — GlassCard, NeonButton, etc.
+    └── cli/                     ← @zenith/cli — create-zenith-plugin scaffold tool
 ```
 
 ---
@@ -185,7 +196,8 @@ Zenith Protocol/
 | `store/authStore.ts` | user, token, isAuthenticated, error | login(), logout(), register(), fetchMe(), updateUser() |
 | `store/leaderboardStore.ts` | entries[], myRank, myScore, activeGame | fetchLeaderboard(), insertOrUpdateEntry(), setActiveGame() |
 | `store/gameStore.ts` | registeredGames[], activeGame | registerGame(), launchGame(), closeGame() |
-| `store/achievementStore.ts` | achievements[], unlocked (Set), pendingToast | fetchAchievements(), unlockAchievement(), clearToast() |
+| `store/achievementStore.ts` | achievements[], unlocked (Set), pendingToast queue | fetchAchievements(), unlockAchievement(), clearToast() |
+| `store/challengeStore.ts` | challenges[], resetsAt, totalEarnedToday, isLoading | fetchChallenges(), markCompleted(id) |
 
 ### Hooks
 
@@ -195,15 +207,17 @@ Zenith Protocol/
 | `hooks/useScoreSubmit.ts` | Score submission with retry logic, routes to correct API endpoint per game |
 | `hooks/useEcho.ts` | Singleton Laravel Echo instance (Reverb/pusher-js), subscribe/unsubscribe |
 | `hooks/useLeaderboard.ts` | REST fetch + Echo subscription to `leaderboard.{gameId}` |
-| `hooks/useProfile.ts` | Profile stats, paginated sessions, game filter, avatar upload |
-| `hooks/useAchievements.ts` | Fetch on mount + Echo subscribe to `user.{userId}` for real-time unlocks |
+| `hooks/useProfile.ts` | Profile stats, paginated sessions, game filter, avatar upload, syncs to authStore |
+| `hooks/useAchievements.ts` | Fetch on mount + Echo subscribe to private `user.{userId}` channel |
+| `hooks/useDailyChallenges.ts` | Fetch on login, countdown via DOM ref mutation (no React state re-renders) |
+| `hooks/useNetworkStatus.ts` | Tracks isOnline/wasOffline, auto-triggers syncWorker.flushQueue() on reconnect |
 
 ### Components
 
 | File | Purpose |
 |------|---------|
-| `components/Navbar.tsx` | Top nav: logo, breadcrumb, score, speaker mute (GSAP wiggle), settings gear, avatar |
-| `components/NeonGrid.tsx` | Full-viewport animated neon grid background |
+| `components/Navbar.tsx` | Top nav: logo, score, speaker mute (GSAP wiggle), settings gear, avatar dropdown |
+| `components/NeonGrid.tsx` | Full-viewport animated neon grid background (GSAP pan) |
 | `components/GameCard.tsx` | Game card with thumbnail, tags, deploy button, GSAP hover/click |
 | `components/GameGrid.tsx` | Responsive grid with ScrollTrigger stagger entrance |
 | `components/GameOverModal.tsx` | Slide-up modal with final score, play again / menu buttons |
@@ -211,33 +225,52 @@ Zenith Protocol/
 | `components/PauseMenu.tsx` | Listens to PAUSE_REQUESTED/RESUME_REQUESTED events |
 | `components/RouteErrorScreen.tsx` | Error boundary for route errors |
 | `components/ProtectedRoute.tsx` | Token hydration → fetchMe → loading → Outlet. requireAdmin prop ready |
-| `components/Leaderboard.tsx` | Game tab switcher, top-3 badges, live pulse, new-entry animation |
+| `components/Leaderboard.tsx` | Game tab switcher (GSAP indicator), top-3 badges, live pulse, new-entry GSAP animation |
 | `components/VolumeControl.tsx` | Styled range slider, neon-cyan thumb, gradient fill, % badge |
-| `components/SettingsModal.tsx` | GSAP entrance, Audio (3 VolumeControls + mute), Account section |
-| `components/AchievementToast.tsx` | Fixed top-right z-50, GSAP slide-in/out, neon-amber glow |
+| `components/SettingsModal.tsx` | GSAP scale+opacity entrance, Audio (3 VolumeControls + mute toggle), Account section |
+| `components/AchievementToast.tsx` | Fixed top-right z-50, GSAP back.out slide-in → 3s → slide-out, neon-amber glow |
+| `components/DailyChallengeBanner.tsx` | Horizontal banner, countdown timer (DOM ref), 3 ChallengeCards, GSAP slide-down |
+| `components/ChallengeCard.tsx` | GlassCard, colored left border per game, progress bar, GSAP "COMPLETED" stamp |
+| `components/OfflineBanner.tsx` | GSAP amber/green banner, pending count, auto-shows when offline |
+
+> ⚠️ KNOWN BUG (unfixed): `GameOverModal` and `PauseMenu` exist but are NOT yet
+> mounted in `GameLayout.tsx`. Fix Prompt 1 in ZenithProtocol_Bug_Fix_Prompts.md
+> addresses this. Until fixed, game over screen does not appear.
 
 ### Layouts
 
 | File | Purpose |
 |------|---------|
 | `layouts/MainLayout.tsx` | Persistent shell: Navbar + Outlet |
-| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module |
+| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module via pluginLoader. ⚠️ GameOverModal + PauseMenu not yet mounted here — see bug fix. |
 
-### Lib
+### Lib / Worker
 
 | File | Purpose |
 |------|---------|
-| `lib/axios.ts` | Axios instance, Bearer token injector, 401 auto-logout |
-| `lib/pluginLoader.ts` | Pre-created lazy components for 3 games |
+| `lib/axios.ts` | Axios instance, Bearer token injector, 401 auto-logout + redirect to /login |
+| `lib/pluginLoader.ts` | Pre-created lazy components for 3 games, registerGame/launchGamePlugin |
+| `lib/offlineQueue.ts` | IndexedDB wrapper (DB: zenith-offline, store: scoreQueue). enqueue/dequeue/remove/getCount |
+| `worker/syncWorker.ts` | flushQueue() — POSTs all queued scores, retry up to 3×, drops after 3 failures |
 
 ### Pages
 
 | File | Purpose |
 |------|---------|
-| `pages/MenuPage.tsx` | Animated title, GameGrid, collapsible Rankings, footer with logout |
-| `pages/LoginPage.tsx` | Neon-themed login form |
-| `pages/RegisterPage.tsx` | Mirrors LoginPage, GSAP error animations |
-| `pages/ProfilePage.tsx` | Hero banner, 3-col stats grid, session history with filter tabs |
+| `pages/MenuPage.tsx` | Animated title, GameGrid, DailyChallengeBanner, collapsible Rankings (Leaderboard), footer |
+| `pages/LoginPage.tsx` | Neon-themed login form, "Register" link |
+| `pages/RegisterPage.tsx` | Mirrors LoginPage, GSAP error animations, "Sign In" link |
+| `pages/ProfilePage.tsx` | Hero banner (AvatarUpload + score + rank), 3-col stats grid, session history with filter tabs |
+
+### PWA Config
+
+| Item | Detail |
+|------|--------|
+| Plugin | `vite-plugin-pwa ^1.3.0` in `apps/web/package.json` devDependencies |
+| registerSW | Called in `main.tsx` from `virtual:pwa-register` |
+| Icons | `public/icons/pwa-192.png` + `pwa-512.png` (neon-cyan Z on dark bg) |
+| Caching | `/sounds/` → CacheFirst. `/api/leaderboards` → NetworkFirst |
+| Offline | Scores queued to IndexedDB via `offlineQueue.ts`, flushed by `syncWorker.ts` on reconnect |
 
 ---
 
@@ -255,26 +288,28 @@ Zenith Protocol/
 | GET | /profile/sessions | UserProfileController@sessions | auth:sanctum |
 | POST | /profile/avatar | UserProfileController@updateAvatar | auth:sanctum |
 | POST | /games/dojo/sessions | DojoController@store | auth:sanctum + throttle:score-submit |
-| POST | /games/card/sessions | CardBattlerController@initSession | auth:sanctum + throttle:score-submit |
+| POST | /games/card/sessions | CardBattlerController@initSession | auth:sanctum |
 | POST | /games/card/moves | CardBattlerController@playMove | auth:sanctum |
 | POST | /games/card/score | CardBattlerController@store | auth:sanctum + throttle:score-submit |
 | POST | /games/runner/sessions | RunnerController@store | auth:sanctum + throttle:score-submit |
-| GET | /leaderboards | LeaderboardController@index | auth:sanctum + throttle:60,1 |
+| GET | /leaderboards | LeaderboardController@index | auth:sanctum, cached 60s |
 | GET | /user/sessions | UserSessionController@index | auth:sanctum |
 | GET | /achievements | AchievementController@index | auth:sanctum |
+| GET | /daily-challenges | DailyChallengeController@index | auth:sanctum |
 
 ### Controllers
 
 | File | Methods |
 |------|---------|
 | `AuthController.php` | register(), login(), logout(), me() |
-| `UserProfileController.php` | show() (single leftJoin), sessions() (paginated), updateAvatar() |
+| `UserProfileController.php` | show() (single leftJoin query), sessions() (paginated), updateAvatar() |
 | `DojoController.php` | store() → DojoScoreService |
 | `CardBattlerController.php` | store() → CardScoreService, initSession(), playMove() → CardMoveService |
 | `RunnerController.php` | store() → RunnerScoreService |
-| `LeaderboardController.php` | index() — cached 60s, returns data[] + meta |
-| `UserSessionController.php` | index() — all sessions for user |
-| `AchievementController.php` | index() — grouped by game_id, unlocked status, progress % |
+| `LeaderboardController.php` | index() — cached 60s, returns data[] + meta{your_rank, your_score} |
+| `UserSessionController.php` | index() — all sessions for authenticated user |
+| `AchievementController.php` | index() — grouped by game_id, unlocked status + progress % |
+| `DailyChallengeController.php` | index() — today's 3 challenges, user completion, resets_at, earned today |
 
 ### Requests (Form Validation)
 
@@ -291,142 +326,66 @@ Zenith Protocol/
 | File | Output |
 |------|--------|
 | `UserResource.php` | id, name, email, avatar_url, total_score, games_played, created_at |
-| `SessionHistoryResource.php` | id, game_id, score, completed_at, detail (match per game) |
+| `SessionHistoryResource.php` | id, game_id, score, completed_at, detail (match per game type) |
 | `GameSessionResource.php` | id, game_id, score, completed_at, metadata |
-| `LeaderboardEntryResource.php` | rank, user{id,name,avatar_url}, score, completed_at |
+| `LeaderboardEntryResource.php` | computed_rank, user{id,name,avatar_url}, score, completed_at |
 | `LeaderboardResource.php` | data[] + generated_at + game_id |
 
 ### Services
 
 | File | Logic |
 |------|-------|
-| `DojoScoreService.php` | Score validation (±5%), creates session, increments user, broadcasts ScoreSubmitted, dispatches CheckAchievements |
-| `CardScoreService.php` | Score validation (ceiling ×1.10), creates session, broadcasts, dispatches CheckAchievements |
-| `RunnerScoreService.php` | Distance/speed validation, creates session, broadcasts, dispatches CheckAchievements |
-| `CardMoveService.php` | Validates card plays against cached game state |
-| `AchievementService.php` | check(User, GameSession) — evaluates conditions, creates UserAchievement, broadcasts AchievementUnlocked |
+| `DojoScoreService.php` | Score validation (±5% tolerance), creates GameSession + DojoSession, increments user stats, broadcasts ScoreSubmitted, dispatches CheckAchievements, calls ChallengeCompletionService |
+| `CardScoreService.php` | Score ceiling validation, creates sessions, broadcasts, dispatches CheckAchievements, calls ChallengeCompletionService |
+| `RunnerScoreService.php` | Distance/speed physics validation, creates sessions, broadcasts, dispatches CheckAchievements, calls ChallengeCompletionService |
+| `CardMoveService.php` | Validates card plays against cached Redis game state (30min TTL) |
+| `AchievementService.php` | check(User, GameSession) — evaluates all condition types via PHP match, creates UserAchievement records, broadcasts AchievementUnlocked |
+| `ChallengeCompletionService.php` | checkAndComplete(User, GameSession) — checks today's challenges for game_id, marks completed, awards reward_points to user.total_score |
 
 ### Models
 
 | File | Key Fields | Relations |
 |------|-----------|-----------|
 | `User.php` | name, email, password, total_score, games_played, avatar_url | HasMany GameSession |
-| `GameSession.php` | user_id, game_id, score, metadata, server_validated_at | BelongsTo User, HasOne DojoSession/CardSession/RunnerSession |
+| `GameSession.php` | user_id, game_id, score, metadata (array), server_validated_at | BelongsTo User, HasOne DojoSession/CardSession/RunnerSession |
 | `DojoSession.php` | session_id, waves_survived, enemies_killed, max_combo, survival_ms | BelongsTo GameSession |
 | `CardSession.php` | session_id, turns_survived, cards_played, cards_drawn, final_enemy_hp | BelongsTo GameSession |
 | `RunnerSession.php` | session_id, distance_meters, peak_speed, obstacles_avoided | BelongsTo GameSession |
-| `Achievement.php` | slug (unique), name, description, icon, game_id, condition_type, condition_value | HasMany UserAchievement |
+| `Achievement.php` | slug (unique), name, description, icon, game_id (nullable), condition_type, condition_value | HasMany UserAchievement |
 | `UserAchievement.php` | user_id, achievement_id, unlocked_at | BelongsTo User + Achievement |
+| `DailyChallenge.php` | date, game_id, challenge_type (enum), target_value, title, description, reward_points | HasMany UserChallenge |
+| `UserChallenge.php` | user_id, challenge_id, completed_at (nullable), progress_value | BelongsTo User + DailyChallenge |
 
 ### Repositories
 
 | File | Methods |
 |------|---------|
 | `LeaderboardRepositoryInterface.php` | getTopScores(), getUserRank(), getUserBestScore() |
-| `EloquentLeaderboardRepository.php` | Implements interface |
+| `EloquentLeaderboardRepository.php` | Implements interface — orderByDesc score, count+1 for rank |
 | `GameSessionRepositoryInterface.php` | create(), findByUser(), findById() |
 
 ### Events
 
 | File | Channel | Event Name | Payload |
 |------|---------|------------|---------|
-| `ScoreSubmitted.php` | `leaderboard.{gameId}` (public) | `score.submitted` | rank, user, score, game_id, submitted_at |
+| `ScoreSubmitted.php` | `leaderboard.{gameId}` (public) | `score.submitted` | rank, user{id,name,avatar_url}, score, game_id, submitted_at |
 | `AchievementUnlocked.php` | `user.{userId}` (private) | `achievement.unlocked` | achievement{slug,name,description,icon}, unlocked_at |
 
 ### Jobs
 
 | File | Purpose |
 |------|---------|
-| `CheckAchievements.php` | ShouldQueue — resolves User + GameSession, calls AchievementService::check() |
+| `CheckAchievements.php` | ShouldQueue — dispatched afterCommit() from all 3 score services. Resolves User + GameSession, calls AchievementService::check() |
+
+### Console Commands
+
+| File | Signature | Schedule |
+|------|-----------|----------|
+| `GenerateDailyChallenges.php` | `challenges:generate` | dailyAt('23:00') UTC — creates 3 challenges for tomorrow using date-seeded mt_srand() for reproducibility. Idempotent. |
 
 ---
 
-## SHARED PACKAGES
-
-### @zenith/game-sdk
-
-| File | Purpose |
-|------|---------|
-| `src/types.ts` | GameStatus (const), GameManifest, discriminated union GameResult, GameResultPayload |
-| `src/eventBus.ts` | Typed mitt singleton: GAME_STARTED, GAME_OVER, SCORE_SUBMIT, PAUSE_REQUESTED, RESUME_REQUESTED, NAVIGATE_HOME |
-| `src/useGameBridge.ts` | React hook: emitGameOver (score submission), emitScore, requestPause |
-| `src/store/soundStore.ts` | Zustand + persist ('zenith-sound'), master/sfx/music volumes, playSfx() |
-| `src/hooks/useSound.ts` | Howl in useRef, volume subscription, cleanup |
-| `src/hooks/useMusic.ts` | Singleton music, auto fade-in/out |
-| `src/index.ts` | Barrel exports |
-
-### @zenith/ui
-
-| File | Purpose |
-|------|---------|
-| `src/GlassCard.tsx` | Backdrop-blur glassmorphism card, optional neon glow, forwardRef |
-| `src/NeonButton.tsx` | GSAP hover/click, 3 variants (primary/ghost/danger), 3 sizes, loading |
-| `src/HealthBar.tsx` | GSAP animated width, color prop, label + current/max |
-| `src/ScoreDisplay.tsx` | GSAP countTo, neon-amber theming |
-| `src/components/StatBadge.tsx` | Glass card widget, color mapping, GSAP countUp |
-| `src/components/AvatarUpload.tsx` | Circular uploader, FileReader preview, GSAP, initials fallback |
-| `src/components/SessionHistoryTable.tsx` | Grid, game pill badges, skeleton pulse, Load More, empty state |
-| `src/index.ts` | Barrel exports |
-
----
-
-## GAME MODULES
-
-### @zenith/dojo-3d
-
-| File | Purpose |
-|------|---------|
-| `src/index.tsx` | Entry: startGame, emitGameOver, Escape → requestPause |
-| `src/types.ts` | DojoGameStatus, PlayerState, EnemyState |
-| `src/store/dojoStore.ts` | Zustand: gameStatus, score, wave, survivedMs, player, enemies |
-| `src/hooks/usePlayerController.ts` | WASD + Space, attack with SFX |
-| `src/hooks/useCombat.ts` | Damage, enemy death, combo tracking |
-| `src/hooks/useEnemyAI.ts` | Enemy movement, attack timing |
-| `src/hooks/useWaveManager.ts` | Wave spawning |
-| `src/components/DojoCanvas.tsx` | R3F Canvas + Physics + Arena + Player + EnemySpawner |
-| `src/components/Arena.tsx` | Static floor + walls (Rapier rigid bodies) |
-| `src/components/Player.tsx` | CapsuleCollider, WASD movement, attack glow |
-| `src/components/Enemy.tsx` | BallCollider, type-based colors, health bar |
-| `src/components/EnemySpawner.tsx` | Renders all enemies from store |
-| `src/components/HUD.tsx` | HealthBar, score, wave, game over overlay |
-| `src/components/CursedEnergyFX.tsx` | Animated cursed energy visual |
-| `src/components/ImpactParticles.tsx` | Particle system |
-| `src/utils/combatFormulas.ts` | calculateDamage(), calculateScoreReward() |
-| `src/utils/spawnPatterns.ts` | generateWaveEnemies(wave) |
-
-### @zenith/cyber-runner
-
-| File | Purpose |
-|------|---------|
-| `src/index.tsx` | Entry: startGame, emitGameOver, Escape → requestPause |
-| `src/store/runnerStore.ts` | Zustand: gameStatus, score, distance, speedLevel, isJumping, isSliding, isGrounded |
-| `src/hooks/useGameLoop.ts` | requestAnimationFrame loop |
-| `src/hooks/useInputHandler.ts` | Space → jump, ArrowDown/Shift → slide, SFX |
-| `src/hooks/useObstacles.ts` | Obstacle spawning, movement, AABB collision |
-| `src/hooks/useParallax.ts` | Background scrolling |
-| `src/components/GameCanvas.tsx` | 2D canvas: background, player, obstacles |
-| `src/components/RunnerHUD.tsx` | Score, distance, speed level |
-| `src/utils/backgroundLayers.ts` | Parallax grid rendering |
-| `src/utils/collision.ts` | AABB collision with widened hitboxes |
-| `src/utils/obstacleFactory.ts` | Random obstacle generation |
-
-### @zenith/card-battler
-
-| File | Purpose |
-|------|---------|
-| `src/index.tsx` | Entry: startGame, emitGameOver, Escape → requestPause |
-| `src/types.ts` | CardType (const), CardGameStatus (const), Card, CardPlayerState, CardEnemyState |
-| `src/cardDatabase.ts` | 7 cards, createStartingDeck(), getRandomCard() |
-| `src/store/cardStore.ts` | Game lifecycle, draw/play cards, end turn, SFX integration |
-| `src/components/GameBoard.tsx` | Enemy area, player area, hand, mana bar, turn indicator |
-| `src/components/Card.tsx` | Type-based coloring, cost badge |
-| `src/components/PlayerHand.tsx` | Renders hand |
-| `src/components/ManaBar.tsx` | Neon-cyan mana pips |
-| `src/components/TurnIndicator.tsx` | Turn number + End Turn button |
-
----
-
-## ACHIEVEMENTS SYSTEM (Added 2026-05-19)
+## ACHIEVEMENTS SYSTEM
 
 ### 12 Seeded Achievements
 
@@ -445,7 +404,7 @@ Zenith Protocol/
 | Runner | `speed_demon` | Speed Demon | distance ≥ 5000 |
 | Runner | `untouchable` | Untouchable | distance ≥ 10000 |
 
-### Condition Evaluation
+### Condition Evaluation (PHP match in AchievementService)
 
 | `condition_type` | Logic |
 |------------------|-------|
@@ -459,14 +418,124 @@ Zenith Protocol/
 
 ```
 Game Session → ScoreService::validateAndSave()
-  → DB transaction → broadcast ScoreSubmitted
+  → DB transaction → broadcast ScoreSubmitted (leaderboard)
+  → ChallengeCompletionService::checkAndComplete()
   → CheckAchievements::dispatch(userId, sessionId)->afterCommit()
     → AchievementService::check(user, session)
-      → Evaluate conditions → Create UserAchievement
-      → broadcast AchievementUnlocked (private channel)
-        → Echo listens → achievementStore.unlockAchievement()
+      → Evaluate conditions → Create UserAchievement records
+      → broadcast AchievementUnlocked (private channel user.{userId})
+        → useEcho listens → achievementStore.unlockAchievement()
         → AchievementToast GSAP animation
 ```
+
+---
+
+## SHARED PACKAGES
+
+### @zenith/game-sdk
+
+| File | Purpose |
+|------|---------|
+| `src/types.ts` | GameStatus (const), GameManifest, discriminated union GameResult, GameResultPayload |
+| `src/eventBus.ts` | Typed mitt singleton: GAME_STARTED, GAME_OVER, SCORE_SUBMIT, PAUSE_REQUESTED, RESUME_REQUESTED, NAVIGATE_HOME |
+| `src/useGameBridge.ts` | React hook: emitGameOver (score submission, accepts optional spectatorMode param), emitScore, requestPause |
+| `src/store/soundStore.ts` | Zustand + persist ('zenith-sound'): master/sfx/music volumes, mute, playSfx() for non-React code |
+| `src/hooks/useSound.ts` | Howl in useRef, volume subscription, cleanup on unmount |
+| `src/hooks/useMusic.ts` | Singleton music via module-level currentMusicHowl, auto fade-in/out |
+| `src/utils/device.ts` | isTouchDevice(), isMobile(), useIsMobile() hook with resize+orientation listeners |
+| `src/index.ts` | Barrel exports: all types, hooks, stores, utils |
+
+### @zenith/ui
+
+| File | Purpose |
+|------|---------|
+| `src/GlassCard.tsx` | Backdrop-blur glassmorphism card, optional neon glow (cyan/purple/amber/green), forwardRef |
+| `src/NeonButton.tsx` | GSAP hover/click, 3 variants (primary/ghost/danger), 3 sizes, loading state |
+| `src/HealthBar.tsx` | GSAP animated width, color prop, label + current/max |
+| `src/ScoreDisplay.tsx` | GSAP countTo animation, neon-amber theming |
+| `src/components/StatBadge.tsx` | Glass card widget, color mapping tokens, GSAP countUp on numeric values, gsap.context() cleanup |
+| `src/components/AvatarUpload.tsx` | Circular uploader, FileReader preview, GSAP scale+rotate during upload, initials fallback |
+| `src/components/SessionHistoryTable.tsx` | Grid layout, game pill badges (coral/teal/blue), skeleton pulse, Load More, empty state |
+| `src/index.ts` | Barrel exports |
+
+### @zenith/cli
+
+| File | Purpose |
+|------|---------|
+| `package.json` | name: @zenith/cli, bin: create-zenith-plugin |
+| `bin/create-zenith-plugin.js` | Interactive CLI: name→slug, type (Canvas/DOM/R3F), author. Copies templates, replaces {{PLACEHOLDER}} tokens, runs pnpm install |
+| `README.md` | Usage, prompts, generated structure, manual wiring steps |
+| `templates/common/` | package.json.tmpl, types.ts.tmpl (typed metadata, NOT Record<string,unknown>) |
+| `templates/canvas/` | index.tsx, store.ts, HUD.tsx, GameCanvas.tsx, useGameLoop.ts |
+| `templates/dom/` | index.tsx, store.ts, HUD.tsx, GameBoard.tsx |
+| `templates/r3f/` | index.tsx, store.ts, HUD.tsx, ArenaCanvas.tsx, Arena.tsx, Player.tsx, usePlayerController.ts |
+
+> CLI usage: `node packages/cli/bin/create-zenith-plugin.js`
+> R3F template uses `colliders={false}` + explicit CapsuleCollider/BallCollider (NOT shape-strings)
+
+---
+
+## GAME MODULES
+
+### @zenith/dojo-3d
+
+| File | Purpose |
+|------|---------|
+| `src/index.tsx` | Entry: startGame, emitGameOver on GAME_OVER, Escape → requestPause |
+| `src/types.ts` | DojoGameStatus, PlayerState, EnemyState, DojoGameState |
+| `src/store/dojoStore.ts` | Zustand: gameStatus, score, wave, survivedMs, player, enemies |
+| `src/hooks/usePlayerController.ts` | WASD + Space input, 500ms attack cooldown, SFX integration |
+| `src/hooks/useCombat.ts` | Damage calc, enemy death, combo tracking |
+| `src/hooks/useEnemyAI.ts` | Enemy movement toward player (>15 units = patrol, <15 = chase, <1.5 = attack) |
+| `src/hooks/useWaveManager.ts` | Wave spawning via spawnPatterns, state machine |
+| `src/hooks/useTouchController.ts` | Touch-driven controller (mobile), same interface as keyboard |
+| `src/components/DojoCanvas.tsx` | R3F Canvas + Physics + Arena + Player + EnemySpawner + ImpactParticles |
+| `src/components/Arena.tsx` | Static floor + boundary walls (Rapier rigid bodies) |
+| `src/components/Player.tsx` | CapsuleCollider (colliders={false} explicit), WASD movement, attack glow |
+| `src/components/Enemy.tsx` | BallCollider (colliders={false} explicit), type-based colors |
+| `src/components/EnemySpawner.tsx` | Renders all enemies from store |
+| `src/components/HUD.tsx` | HealthBar, score, wave, renders VirtualJoystick + AttackButton on mobile |
+| `src/components/CursedEnergyFX.tsx` | Animated cursed energy ring on attack |
+| `src/components/ImpactParticles.tsx` | Particle burst on enemy hit |
+| `src/components/VirtualJoystick.tsx` | Custom virtual joystick (NO nipplejs), 120px, pointer events, normalized {x,y} output |
+| `src/components/AttackButton.tsx` | 80px circular mobile attack button, GSAP scale pulse, 500ms cooldown |
+| `src/utils/combatFormulas.ts` | calculateDamage(), calculateScoreReward() |
+| `src/utils/spawnPatterns.ts` | generateWaveEnemies(wave) — spawns outside 5-unit radius |
+
+### @zenith/cyber-runner
+
+| File | Purpose |
+|------|---------|
+| `src/index.tsx` | Entry: startGame, emitGameOver on GAME_OVER, Escape → requestPause |
+| `src/store/runnerStore.ts` | Zustand: gameStatus, score, distance, speedLevel, isJumping, isSliding, isGrounded |
+| `src/hooks/useGameLoop.ts` | rAF loop: deltaTime capped at 100ms, pauses on tab hidden, rAF in ref (not state) |
+| `src/hooks/useInputHandler.ts` | Space/ArrowUp → jump, ArrowDown/S → slide, SFX on action |
+| `src/hooks/useObstacles.ts` | Obstacle spawning (1.5s interval), movement, AABB collision |
+| `src/hooks/useParallax.ts` | 4-layer background scrolling at different speeds |
+| `src/hooks/usePhysics.ts` | GRAVITY=1800px/s², JUMP_FORCE=-620px/s, isGrounded=false on start |
+| `src/components/GameCanvas.tsx` | 2D canvas: background layers, player, obstacles, collision check per frame |
+| `src/components/RunnerHUD.tsx` | Score, distance, speed level, game over overlay |
+| `src/components/TouchControls.tsx` | Fullscreen invisible overlay (mobile): left=jump, right=slide, preventDefault |
+| `src/utils/backgroundLayers.ts` | 4-layer parallax background rendering via Canvas API |
+| `src/utils/collision.ts` | AABB with widened hitboxes |
+| `src/utils/obstacleFactory.ts` | Random obstacle generation: BARRIER / LOW_BLOCK / HOVER_MINE |
+
+### @zenith/card-battler
+
+| File | Purpose |
+|------|---------|
+| `src/index.tsx` | Entry: startGame, emitGameOver, Escape → requestPause. Spectator autoplay useEffect. "Spectate Game" toggle button |
+| `src/types.ts` | CardType (const), CardGameStatus (const), Card, CardPlayerState, CardEnemyState |
+| `src/cardDatabase.ts` | 7 cards (attack/defense/utility), createStartingDeck(), getRandomCard() |
+| `src/store/cardStore.ts` | Game lifecycle, draw/play cards, end turn, SFX, spectatorMode: boolean, toggleSpectatorMode() |
+| `src/components/GameBoard.tsx` | Enemy area (face-up in spectator), player area, "End Turn" disabled in spectator |
+| `src/components/Card.tsx` | Type-based coloring, pointer events (not mouse), drag-to-play via Pointer Events API |
+| `src/components/PlayerHand.tsx` | Fan layout (desktop), horizontal scroll (mobile), drag-play disabled in spectator |
+| `src/components/ManaBar.tsx` | Neon-cyan mana pips |
+| `src/components/TurnIndicator.tsx` | Turn number + End Turn button |
+
+> SPECTATOR MODE: Local AI vs AI toggle — NOT Reverb broadcasting.
+> `emitGameOver` passes `spectatorMode=true` → score submission skipped in useGameBridge.
 
 ---
 
@@ -477,15 +546,17 @@ Game Session → ScoreService::validateAndSave()
 | Backend driver | Laravel Reverb (pusher protocol) |
 | Public channel | `leaderboard.{gameId}` → `score.submitted` |
 | Private channel | `user.{userId}` → `achievement.unlocked` |
-| Frontend | pusher-js via laravel-echo, singleton via `useEcho()` |
+| Frontend singleton | `useEcho()` hook — module-level instance, subscribe/unsubscribe helpers |
+| Frontend deps | pusher-js, laravel-echo |
+| Dev setup | `php artisan reverb:start` (port 8080) in separate terminal |
 
 ---
 
 ## CI STATUS
 
-- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds
+- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (499 modules)
 - Backend: PHP 8.3 platform locked, 11 Pest tests passing
-- Branch: fix/resolve-frontend-lint merged to main
+- GitHub Actions: both frontend-ci and backend-ci jobs green
 
 ---
 
@@ -495,8 +566,36 @@ Game Session → ScoreService::validateAndSave()
 2. **Const Object + Derived Type** — `GameStatus` (enum banned by `erasableSyntaxOnly`)
 3. **Type-Only Imports** — `import type` for all types (`verbatimModuleSyntax`)
 4. **Unused Param Prefix** — `_` prefix (`noUnusedLocals` enforced)
-5. **Lazy Components Pre-Created** — outside render loop
-6. **Singleton Echo** — module-level instance
-7. **Score Validation** — Backend never trusts frontend scores
-8. **Cache + Broadcast** — Leaderboard cached 60s, busted on submission
+5. **Lazy Components Pre-Created** — outside render loop in `pluginLoader.ts`
+6. **Singleton Echo** — module-level instance in `useEcho.ts`
+7. **Score Validation** — Backend recalculates scores server-side; frontend never trusted
+8. **Cache + Broadcast** — Leaderboard cached 60s, busted on submission, broadcast for real-time
 9. **Achievement Jobs** — `afterCommit()` ensures DB transaction completes before check
+10. **Rapier Colliders** — Always `colliders={false}` + explicit CapsuleCollider/BallCollider. NEVER shape-string colliders (they crash)
+11. **Touch Input** — Custom VirtualJoystick (no nipplejs), Pointer Events for Card Battler
+12. **Offline Queue** — IndexedDB via offlineQueue.ts, flushed by syncWorker.ts on reconnect
+13. **Spectator Mode** — Local AI vs AI in Card Battler only. No backend events. Score skipped.
+14. **SDK CLI** — `node packages/cli/bin/create-zenith-plugin.js` scaffolds new game modules
+
+---
+
+## KNOWN BUGS (from audit — fix before launch)
+
+| Priority | Bug | File to fix |
+|----------|-----|-------------|
+| P0 | GameOverModal + PauseMenu never mounted | `GameLayout.tsx` |
+| P0 | Dojo score formula mismatch → 422 rejected | `DojoScoreService.php` |
+| P0 | Card score formula mismatch → 422 rejected | `CardScoreService.php` |
+| P1 | Logout never revokes server token | `authStore.ts` |
+| P1 | PWA sync uses wrong localStorage key | `syncWorker.ts` |
+| P1 | Enemy death has no GSAP animation | `Enemy.tsx`, `dojoStore.ts` |
+| P1 | enemiesKilled + maxCombo not in metadata | `dojoStore.ts`, `index.tsx` |
+| P1 | obstaclesAvoided always 0 | `runnerStore.ts`, `GameCanvas.tsx` |
+| P1 | Card victory +500 bonus missing | `cardStore.ts`, `index.tsx` |
+| P2 | No 80% inner hitbox on Runner | `collision.ts` |
+| P2 | Dojo attack ranges off (2.0/1.2 → 1.5/1.5) | `useCombat.ts`, `useEnemyAI.ts` |
+| P2 | Combo shows at 2+ kills (should be 3+) | `HUD.tsx` |
+| P2 | Enemy patrol missing (freeze when far) | `useEnemyAI.ts` |
+| P2 | Player motion trail missing | `Player.tsx` |
+| P2 | ImpactParticles fixed at origin | `ImpactParticles.tsx`, `dojoStore.ts` |
+| P2 | Player legs missing on Runner | `GameCanvas.tsx` |
