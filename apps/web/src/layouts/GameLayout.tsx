@@ -7,11 +7,15 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
+import type { GameResult } from '@sdk/types';
+import { gameBus } from '@sdk/eventBus';
 import { useGameStore } from '../store/gameStore';
 import { launchGamePlugin } from '../lib/pluginLoader';
 import { GlobalLoadingScreen } from '../components/GlobalLoadingScreen';
 import { GlassCard } from '@ui/GlassCard';
 import { useIsMobile } from '@sdk/utils/device';
+import { GameOverModal } from '../components/GameOverModal';
+import { PauseMenu } from '../components/PauseMenu';
 
 export const GameLayout: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -19,6 +23,8 @@ export const GameLayout: React.FC = () => {
   const { launchGame, closeGame } = useGameStore();
   const isMobile = useIsMobile();
   const [isPortrait, setIsPortrait] = useState(false);
+  const [gameResult, setGameResult] = useState<GameResult | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     if (gameId) {
@@ -40,6 +46,29 @@ export const GameLayout: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleGameOver = (result: GameResult) => {
+      setGameResult(result);
+      setIsPaused(false);
+    };
+    const handlePauseRequested = () => {
+      setIsPaused(true);
+    };
+    const handleResumeRequested = () => {
+      setIsPaused(false);
+    };
+
+    gameBus.on('GAME_OVER', handleGameOver);
+    gameBus.on('PAUSE_REQUESTED', handlePauseRequested);
+    gameBus.on('RESUME_REQUESTED', handleResumeRequested);
+
+    return () => {
+      gameBus.off('GAME_OVER', handleGameOver);
+      gameBus.off('PAUSE_REQUESTED', handlePauseRequested);
+      gameBus.off('RESUME_REQUESTED', handleResumeRequested);
+    };
+  }, []);
+
   if (!gameId) {
     navigate('/');
     return null;
@@ -57,11 +86,48 @@ export const GameLayout: React.FC = () => {
 
   const showOrientationWarning = isMobile && gameId === 'dojo-3d' && isPortrait;
 
+  const handlePlayAgain = () => {
+    setGameResult(null);
+    setIsPaused(false);
+    // Force remount by navigating to same route
+    navigate(`/play/${gameId}`, { replace: true });
+    window.location.reload();
+  };
+
+  const handleMenu = () => {
+    setGameResult(null);
+    setIsPaused(false);
+    navigate('/');
+  };
+
+  const handleResume = () => {
+    setIsPaused(false);
+    gameBus.emit('RESUME_REQUESTED', undefined);
+  };
+
   return (
     <div className="w-screen h-screen overflow-hidden bg-black relative">
       <Suspense fallback={<GlobalLoadingScreen />}>
         <GameComponent />
       </Suspense>
+
+      {/* Game Over Modal — shown when game ends */}
+      {gameResult && (
+        <GameOverModal
+          result={gameResult}
+          onPlayAgain={handlePlayAgain}
+          onMenu={handleMenu}
+        />
+      )}
+
+      {/* Pause Menu — shown when Escape pressed */}
+      {isPaused && (
+        <PauseMenu
+          onResume={handleResume}
+          onRestart={handlePlayAgain}
+          onMenu={handleMenu}
+        />
+      )}
 
       {showOrientationWarning && <OrientationOverlay />}
     </div>
