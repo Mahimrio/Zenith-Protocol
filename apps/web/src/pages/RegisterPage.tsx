@@ -72,11 +72,11 @@ export const RegisterPage: React.FC = () => {
       >
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 rounded-xl bg-neon-cyan shadow-[0_0_20px_#00f5ff80] flex items-center justify-center mb-6">
-            <div className="w-8 h-8 border-4 border-bg-primary rounded-sm" />
+          <div className="w-16 h-16 rounded-xl bg-bg-primary border-2 border-neon-cyan shadow-[0_0_20px_#00f5ff80] flex items-center justify-center mb-6">
+            <span className="text-3xl font-bold text-neon-cyan" style={{ textShadow: '0 0 8px #00f5ff' }}>Z</span>
           </div>
           <h1 className="text-4xl font-bold text-text-primary tracking-[0.2em] uppercase">
-            Zenith<span className="text-neon-cyan">OS</span>
+            Zenith<span className="text-neon-cyan">Protocol</span>
           </h1>
           <p className="text-text-muted mt-2 font-mono text-sm">
             NEW OPERATIVE REGISTRATION

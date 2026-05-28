@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
  * Main menu page — hub for game selection and live leaderboards.
  *
  * Renders:
- *  - Animated "GAME HUB" title with staggered letter entrance
+ *  - Animated "ZENITH PROTOCOL" title with staggered letter entrance
  *  - GameGrid for game selection
  *  - Collapsible "RANKINGS" section with GSAP height animation
  *  - User info footer with logout
@@ -53,7 +53,7 @@ export const MenuPage: React.FC = () => {
     }
   }, []);
 
-  const titleText = "GAME HUB".split('');
+  const titleText = "ZENITH PROTOCOL".split('');
 
   /* ── Rankings expand/collapse animation ─────────────────────────── */
   const toggleRankings = useCallback(() => {

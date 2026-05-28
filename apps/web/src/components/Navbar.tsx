@@ -69,7 +69,7 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-sm bg-neon-cyan shadow-[0_0_8px_#00f5ff80]" />
             <h1 className="text-xl font-bold text-text-primary tracking-widest">
-              GAME<span className="text-neon-cyan">HUB</span>
+              ZENITH<span className="text-neon-cyan">PROTOCOL</span>
             </h1>
           </div>
           
