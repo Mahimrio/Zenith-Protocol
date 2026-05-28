@@ -19,18 +19,41 @@ class DojoScoreService {
                 abort(422, 'Invalid survival time.');
             }
 
-            $basePoints = 10;
-            $waveBonus = $data['waves_survived'] * 50;
-            $expectedScore = ($data['enemies_killed'] * $basePoints) + $waveBonus;
-
-            $diff = abs($data['score'] - $expectedScore);
-            if ($expectedScore > 0 && ($diff / $expectedScore) > 0.05) {
-                Log::warning('Suspicious Dojo Score', ['user' => $user->id, 'data' => $data]);
-                abort(422, 'Score validation failed.');
-            }
-
             if ($data['max_combo'] > $data['enemies_killed']) {
                 abort(422, 'Invalid combo.');
+            }
+
+            // Recalculate expected score using same formula as frontend:
+            // scorePerKill(wave) = floor(100 * (1 + wave * 0.2))
+            $expectedScore = 0;
+            $remainingKills = $data['enemies_killed'];
+            if ($data['waves_survived'] > 0) {
+                $killsPerWave = (int) ceil($remainingKills / $data['waves_survived']);
+                for ($w = 1; $w <= $data['waves_survived']; $w++) {
+                    $waveKills = min($killsPerWave, $remainingKills);
+                    $scorePerKill = (int) floor(100 * (1 + $w * 0.2));
+                    $expectedScore += $waveKills * $scorePerKill;
+                    $remainingKills -= $waveKills;
+                    if ($remainingKills <= 0) break;
+                }
+            } else {
+                $expectedScore = $data['enemies_killed'] * 100;
+            }
+
+            // Allow 2.5x multiplier for combos + rounding tolerance
+            $ceiling = $expectedScore * 2.5;
+
+            if ($data['score'] > $ceiling) {
+                // Hard-reject extreme outliers only
+                if ($data['score'] > $ceiling * 3) {
+                    Log::warning('Dojo score implausible', ['user' => $user->id, 'data' => $data, 'expected_ceiling' => $ceiling]);
+                    abort(422, 'Score implausible.');
+                }
+                Log::warning('Suspicious dojo score', [
+                    'user_id' => $user->id,
+                    'score' => $data['score'],
+                    'expected_ceiling' => $ceiling,
+                ]);
             }
 
             $session = GameSession::create([

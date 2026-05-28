@@ -2,7 +2,7 @@
 
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
-> **Last updated:** 2026-05-27
+> **Last updated:** 2026-05-28
 
 ---
 
@@ -335,8 +335,8 @@ Zenith Protocol/
 
 | File | Logic |
 |------|-------|
-| `DojoScoreService.php` | Score validation (±5% tolerance), creates GameSession + DojoSession, increments user stats, broadcasts ScoreSubmitted, dispatches CheckAchievements, calls ChallengeCompletionService |
-| `CardScoreService.php` | Score ceiling validation, creates sessions, broadcasts, dispatches CheckAchievements, calls ChallengeCompletionService |
+| `DojoScoreService.php` | Score validation (frontend-aligned formula: `floor(100*(1+wave*0.2))` per kill, 2.5x combo ceiling), creates GameSession + DojoSession, increments user stats, broadcasts ScoreSubmitted, dispatches CheckAchievements, calls ChallengeCompletionService |
+| `CardScoreService.php` | Score ceiling validation (cost-aware: max cost 9 per card + victory 500 bonus, 1.2x tolerance), creates sessions, broadcasts, dispatches CheckAchievements, calls ChallengeCompletionService |
 | `RunnerScoreService.php` | Distance/speed physics validation, creates sessions, broadcasts, dispatches CheckAchievements, calls ChallengeCompletionService |
 | `CardMoveService.php` | Validates card plays against cached Redis game state (30min TTL) |
 | `AchievementService.php` | check(User, GameSession) — evaluates all condition types via PHP match, creates UserAchievement records, broadcasts AchievementUnlocked |
@@ -555,7 +555,7 @@ Game Session → ScoreService::validateAndSave()
 ## CI STATUS
 
 - Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (499 modules)
-- Backend: PHP 8.3 platform locked, 11 Pest tests passing
+- Backend: PHP 8.3 platform locked, 11 Pest tests passing (all 11 passing as of 2026-05-28)
 - GitHub Actions: both frontend-ci and backend-ci jobs green
 
 ---
@@ -584,8 +584,8 @@ Game Session → ScoreService::validateAndSave()
 | Priority | Bug | File to fix |
 |----------|-----|-------------|
 | ~~P0~~ **FIXED** | ~~GameOverModal + PauseMenu never mounted~~ | ~~`GameLayout.tsx`~~ |
-| P0 | Dojo score formula mismatch → 422 rejected | `DojoScoreService.php` |
-| P0 | Card score formula mismatch → 422 rejected | `CardScoreService.php` |
+| ~~P0~~ **FIXED** | ~~Dojo score formula mismatch → 422 rejected~~ | ~~`DojoScoreService.php`~~ (see `FIX_002_Dojo_Card_ScoreValidation.md`) |
+| ~~P0~~ **FIXED** | ~~Card score formula mismatch → 422 rejected~~ | ~~`CardScoreService.php`~~ (see `FIX_002_Dojo_Card_ScoreValidation.md`) |
 | P1 | Logout never revokes server token | `authStore.ts` |
 | P1 | PWA sync uses wrong localStorage key | `syncWorker.ts` |
 | P1 | Enemy death has no GSAP animation | `Enemy.tsx`, `dojoStore.ts` |

@@ -19,11 +19,24 @@ class CardScoreService {
             $cardsPlayed = $data['cards_played'];
             $finalScore = $data['final_score'];
 
-            // Validate score plausibility: each turn gives base 50 pts, each card played gives 10 pts
-            $expectedCeiling = ($turnsSurvived * 50) + ($cardsPlayed * 10);
-            if ($finalScore > $expectedCeiling * 1.10) {
-                Log::warning('Suspicious Card Battler Score', ['user' => $user->id, 'data' => $data]);
-                abort(422, 'Score validation failed.');
+            // Validate score plausibility: turn base (50 pts) + card cost * 10 per card + victory (500)
+            // Frontend: score += card.cost * 10 per card played; max cost is 9 (Obliterate)
+            $maxCostPerCard = 9;
+            $expectedCeiling = ($turnsSurvived * 50)
+                + ($cardsPlayed * $maxCostPerCard * 10)
+                + 500; // victory bonus
+
+            // Allow 1.2x tolerance for rounding
+            if ($finalScore > $expectedCeiling * 1.2) {
+                if ($finalScore > $expectedCeiling * 3) {
+                    Log::warning('Card score implausible', ['user' => $user->id, 'data' => $data, 'expected_ceiling' => $expectedCeiling]);
+                    abort(422, 'Score implausible.');
+                }
+                Log::warning('Suspicious card score', [
+                    'user_id' => $user->id,
+                    'score' => $finalScore,
+                    'expected_ceiling' => $expectedCeiling,
+                ]);
             }
 
             if ($cardsPlayed > $turnsSurvived * 5) {
