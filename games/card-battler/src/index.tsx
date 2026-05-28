@@ -12,7 +12,7 @@ import { GameStatus } from '@sdk/types';
 
 const CardBattlerGame: React.FC = () => {
   const { 
-    startGame, gameStatus, currentTurn, score, cardsPlayed, turnsSurvived,
+    startGame, gameStatus, currentTurn,
     spectatorMode, toggleSpectatorMode, playerHand, playerMana, playCard, endTurn
   } = useCardStore();
   const { emitGameOver, requestPause } = useGameBridge('card-battler');
@@ -26,16 +26,21 @@ const CardBattlerGame: React.FC = () => {
 
   useEffect(() => {
     if (gameStatus === GameStatus.GAME_OVER) {
+      const state = useCardStore.getState();
+      const finalScore = (state.turnsSurvived * 100)
+        + (state.cardsPlayed * 25)
+        + (state.isVictory ? 500 : 0);
       emitGameOver({
-        score: score + turnsSurvived * 50,
+        score: finalScore,
         metadata: {
-          turnsSurvived,
-          cardsPlayed
+          turnsSurvived: state.turnsSurvived,
+          cardsPlayed: state.cardsPlayed,
+          finalEnemyHp: state.enemyHp,
         },
         completedAt: new Date().toISOString()
       }, spectatorMode);
     }
-  }, [gameStatus, score, turnsSurvived, cardsPlayed, emitGameOver, spectatorMode]);
+  }, [gameStatus, spectatorMode, emitGameOver]);
 
   // Autoplay loop when spectator mode is active
   useEffect(() => {
