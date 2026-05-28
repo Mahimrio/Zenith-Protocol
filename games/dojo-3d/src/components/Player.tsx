@@ -7,6 +7,7 @@ import { useFrame } from '@react-three/fiber';
 import { CapsuleCollider, RigidBody, RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import { Trail } from '@react-three/drei';
 import { usePlayerController } from '../hooks/usePlayerController';
 import { useDojoStore } from '../store/dojoStore';
 import { useCombat } from '../hooks/useCombat';
@@ -56,10 +57,18 @@ export const Player: React.FC = () => {
     <RigidBody ref={rb} colliders={false} mass={1} type="dynamic" lockRotations position={[0, 2, 0]}>
       <CapsuleCollider args={[0.5, 0.5]} />
       <group ref={groupRef}>
-        <mesh castShadow>
-          <capsuleGeometry args={[0.5, 1, 4, 8]} />
-          <meshStandardMaterial color="#10101a" emissive="#00f5ff" emissiveIntensity={0.5} toneMapped={false} />
-        </mesh>
+        <Trail
+          width={1.5}
+          length={6}
+          color="#00f5ff"
+          attenuation={(t: number) => t * t}
+          decay={1}
+        >
+          <mesh castShadow>
+            <capsuleGeometry args={[0.5, 1, 4, 8]} />
+            <meshStandardMaterial color="#10101a" emissive="#00f5ff" emissiveIntensity={0.5} toneMapped={false} />
+          </mesh>
+        </Trail>
         <mesh ref={fistRef} position={[0, 0, 0.8]} castShadow>
           <boxGeometry args={[0.4, 0.4, 0.4]} />
           <meshStandardMaterial color="#00f5ff" emissive="#00f5ff" emissiveIntensity={1.5} toneMapped={false} />

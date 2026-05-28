@@ -596,6 +596,6 @@ Game Session → ScoreService::validateAndSave()
 | ~~P2~~ **FIXED** | ~~Dojo attack ranges off (2.0/1.2 → 1.5/1.5)~~ | ~~`useCombat.ts`, `useEnemyAI.ts`~~ (see `FIX_007_DojoCombatRanges_Combo_Patrol.md`) |
 | ~~P2~~ **FIXED** | ~~Combo shows at 2+ kills (should be 3+)~~ | ~~`HUD.tsx`~~ (see `FIX_007_DojoCombatRanges_Combo_Patrol.md`) |
 | ~~P2~~ **FIXED** | ~~Enemy patrol missing (freeze when far)~~ | ~~`useEnemyAI.ts`~~ (see `FIX_007_DojoCombatRanges_Combo_Patrol.md`) |
-| P2 | Player motion trail missing | `Player.tsx` |
-| P2 | ImpactParticles fixed at origin | `ImpactParticles.tsx`, `dojoStore.ts` |
+| ~~P2~~ **FIXED** | ~~Player motion trail missing~~ | ~~`Player.tsx`~~ (see `FIX_008_DojoTrail_ImpactPosition.md`) |
+| ~~P2~~ **FIXED** | ~~ImpactParticles fixed at origin~~ | ~~`ImpactParticles.tsx`, `dojoStore.ts`~~ (see `FIX_008_DojoTrail_ImpactPosition.md`) |
 | P2 | Player legs missing on Runner | `GameCanvas.tsx` |

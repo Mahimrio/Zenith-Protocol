@@ -9,7 +9,7 @@ import { useDojoStore } from '../store/dojoStore';
 
 export const ImpactParticles: React.FC = () => {
   const particlesRef = useRef<THREE.Points>(null);
-  const { score } = useDojoStore(); 
+  const { score, lastHitPosition } = useDojoStore();
   const [active, setActive] = useState(false);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export const ImpactParticles: React.FC = () => {
   if (!active) return null;
 
   return (
-    <points ref={particlesRef} position={[0, 2, 0]}>
+    <points ref={particlesRef} position={lastHitPosition}>
       <sphereGeometry args={[1, 16, 16]} />
       <pointsMaterial color="#8b5cf6" size={0.1} transparent opacity={1} blending={THREE.AdditiveBlending} />
     </points>
