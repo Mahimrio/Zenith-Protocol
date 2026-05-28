@@ -10,7 +10,7 @@ import { useGameBridge } from '@sdk/useGameBridge';
 import { GameStatus } from '@sdk/types';
 
 const CyberRunnerGame: React.FC = () => {
-  const { startGame, gameStatus, distance } = useRunnerStore();
+  const { startGame, gameStatus, distance, obstaclesAvoided } = useRunnerStore();
   const { emitGameOver, requestPause } = useGameBridge('cyber-runner');
   const [speedLevel, setSpeedLevel] = useState(1);
 
@@ -24,7 +24,8 @@ const CyberRunnerGame: React.FC = () => {
         score: Math.floor(distance / 100),
         metadata: {
           distanceTraveled: Math.floor(distance),
-          finalSpeedLevel: speedLevel
+          finalSpeedLevel: speedLevel,
+          obstaclesAvoided,
         },
         completedAt: new Date().toISOString()
       });

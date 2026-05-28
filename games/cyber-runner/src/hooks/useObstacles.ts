@@ -5,6 +5,7 @@
 import { useRef } from 'react';
 import type { Obstacle } from '../utils/obstacleFactory';
 import { ObstacleType, createObstacle } from '../utils/obstacleFactory';
+import { useRunnerStore } from '../store/runnerStore';
 
 export const useObstacles = () => {
   const obstacles = useRef<Obstacle[]>([]);
@@ -28,6 +29,7 @@ export const useObstacles = () => {
     for (let i = obstacles.current.length - 1; i >= 0; i--) {
       obstacles.current[i].x -= gameSpeed * obstacles.current[i].speedMultiplier * deltaTime;
       if (obstacles.current[i].x < -100) {
+        useRunnerStore.getState().incrementObstaclesAvoided();
         obstacles.current.splice(i, 1);
       }
     }

@@ -7,7 +7,7 @@ import { useGameLoop } from '../hooks/useGameLoop';
 import { usePhysics } from '../hooks/usePhysics';
 import { useParallax } from '../hooks/useParallax';
 import { useObstacles } from '../hooks/useObstacles';
-import { aabbCollides } from '../utils/collision';
+import { checkPlayerObstacleCollision } from '../utils/collision';
 import { useRunnerStore } from '../store/runnerStore';
 import { useInputHandler } from '../hooks/useInputHandler';
 import { TouchControls } from './TouchControls';
@@ -100,7 +100,7 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
         w: obs.width,
         h: obs.height
       };
-      if (aabbCollides(pHitbox, oHitbox)) {
+      if (checkPlayerObstacleCollision(pHitbox, oHitbox, player.isSliding)) {
         console.log('COLLISION DETECTED', pHitbox, oHitbox);
         hit = true;
         break;
