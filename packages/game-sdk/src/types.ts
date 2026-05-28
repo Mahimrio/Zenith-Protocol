@@ -42,6 +42,7 @@ export interface RunnerMetadata {
 export interface CardBattlerMetadata {
   turnsSurvived: number;
   cardsPlayed: number;
+  finalEnemyHp?: number;
 }
 
 // ── Discriminated union for game results ─────────────────────────────

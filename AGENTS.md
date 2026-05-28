@@ -527,7 +527,7 @@ Game Session → ScoreService::validateAndSave()
 | `src/index.tsx` | Entry: startGame, emitGameOver, Escape → requestPause. Spectator autoplay useEffect. "Spectate Game" toggle button |
 | `src/types.ts` | CardType (const), CardGameStatus (const), Card, CardPlayerState, CardEnemyState |
 | `src/cardDatabase.ts` | 7 cards (attack/defense/utility), createStartingDeck(), getRandomCard() |
-| `src/store/cardStore.ts` | Game lifecycle, draw/play cards, end turn, SFX, spectatorMode: boolean, toggleSpectatorMode() |
+| `src/store/cardStore.ts` | Game lifecycle, draw/play cards, end turn, isVictory tracking, SFX, spectatorMode: boolean, toggleSpectatorMode() |
 | `src/components/GameBoard.tsx` | Enemy area (face-up in spectator), player area, "End Turn" disabled in spectator |
 | `src/components/Card.tsx` | Type-based coloring, pointer events (not mouse), drag-to-play via Pointer Events API |
 | `src/components/PlayerHand.tsx` | Fan layout (desktop), horizontal scroll (mobile), drag-play disabled in spectator |
@@ -591,7 +591,7 @@ Game Session → ScoreService::validateAndSave()
 | ~~P1~~ **FIXED** | ~~Enemy death has no GSAP animation~~ | ~~`Enemy.tsx`, `dojoStore.ts`~~ (see `FIX_004_DojoDeathAnimation_Metadata.md`) |
 | ~~P1~~ **FIXED** | ~~enemiesKilled + maxCombo not in metadata~~ | ~~`dojoStore.ts`, `index.tsx`~~ (see `FIX_004_DojoDeathAnimation_Metadata.md`) |
 | P1 | obstaclesAvoided always 0 | `runnerStore.ts`, `GameCanvas.tsx` |
-| P1 | Card victory +500 bonus missing | `cardStore.ts`, `index.tsx` |
+| ~~P1~~ **FIXED** | ~~Card victory +500 bonus missing~~ | ~~`cardStore.ts`, `index.tsx`~~ (see `FIX_005_CardVictoryMetadata.md`) |
 | P2 | No 80% inner hitbox on Runner | `collision.ts` |
 | P2 | Dojo attack ranges off (2.0/1.2 → 1.5/1.5) | `useCombat.ts`, `useEnemyAI.ts` |
 | P2 | Combo shows at 2+ kills (should be 3+) | `HUD.tsx` |

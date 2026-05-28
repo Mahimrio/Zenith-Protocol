@@ -32,6 +32,7 @@ interface CardState {
   score: number;
   cardsPlayed: number;
   turnsSurvived: number;
+  isVictory: boolean;
 
   spectatorMode: boolean;
   toggleSpectatorMode: () => void;
@@ -73,6 +74,7 @@ export const useCardStore = create<CardState>((set, get) => ({
   score: 0,
   cardsPlayed: 0,
   turnsSurvived: 0,
+  isVictory: false,
   spectatorMode: false,
 
   toggleSpectatorMode: () => set(state => ({ spectatorMode: !state.spectatorMode })),
@@ -97,6 +99,7 @@ export const useCardStore = create<CardState>((set, get) => ({
       score: 0,
       cardsPlayed: 0,
       turnsSurvived: 0,
+      isVictory: false,
       spectatorMode: false
     });
     get().drawCard('player', 4);
@@ -226,10 +229,18 @@ export const useCardStore = create<CardState>((set, get) => ({
     set(s => {
       if (target === 'player') {
         const hp = Math.max(0, s.playerHp - amount);
-        return { playerHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
+        return {
+          playerHp: hp,
+          gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus,
+          isVictory: hp === 0 ? false : s.isVictory,
+        };
       } else {
         const hp = Math.max(0, s.enemyHp - amount);
-        return { enemyHp: hp, gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus };
+        return {
+          enemyHp: hp,
+          gameStatus: hp === 0 ? GameStatus.GAME_OVER : s.gameStatus,
+          isVictory: hp === 0 ? true : s.isVictory,
+        };
       }
     });
 
