@@ -12,7 +12,7 @@ import { useRunnerStore } from '../store/runnerStore';
 import { useInputHandler } from '../hooks/useInputHandler';
 import { TouchControls } from './TouchControls';
 
-export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }> = ({ onGameSpeedUpdate }) => {
+export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { state: _pState, update: pUpdate, jump, slide } = usePhysics();
   const { updateAndDraw } = useParallax();
@@ -25,7 +25,7 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
 
   useInputHandler(jump, slide, gameStatus === 'PLAYING');
 
-  const { start, stop } = useGameLoop((deltaTime, _totalTime) => {
+  const { start, stop } = useGameLoop((deltaTime, totalTime) => {
     if (gameStatus !== 'PLAYING') return;
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -35,7 +35,7 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
     if (timeRef.current > 10) {
       timeRef.current -= 10;
       gameSpeedRef.current += 15;
-      onGameSpeedUpdate(Math.floor((gameSpeedRef.current - 280) / 15) + 1);
+      useRunnerStore.getState().incrementSpeedLevel();
     }
 
     incrementDistance(gameSpeedRef.current * deltaTime);
@@ -82,6 +82,27 @@ export const GameCanvas: React.FC<{ onGameSpeedUpdate: (speed: number) => void }
     ctx.arc(player.x + pWidth/2, drawY - (player.isSliding ? -10 : 15), 12, 0, Math.PI*2);
     ctx.fill();
     ctx.stroke();
+
+    ctx.shadowBlur = 0;
+
+    // Legs — animated swing only when not sliding
+    if (!player.isSliding) {
+      const legSwing = Math.sin(totalTime * 15) * 10;
+      ctx.strokeStyle = '#00f5ff';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00f5ff';
+      ctx.shadowBlur = 4;
+
+      ctx.beginPath();
+      ctx.moveTo(player.x + pWidth * 0.35, drawY + pHeight);
+      ctx.lineTo(player.x + pWidth * 0.35 + legSwing, drawY + pHeight + 15);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(player.x + pWidth * 0.65, drawY + pHeight);
+      ctx.lineTo(player.x + pWidth * 0.65 - legSwing, drawY + pHeight + 15);
+      ctx.stroke();
+    }
 
     ctx.shadowBlur = 0;
 

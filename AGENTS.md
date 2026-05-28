@@ -3,6 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-28
+> **All 15 audit bugs fixed.** ✅
 
 ---
 
@@ -554,7 +555,7 @@ Game Session → ScoreService::validateAndSave()
 
 ## CI STATUS
 
-- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (499 modules)
+- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (751 modules)
 - Backend: PHP 8.3 platform locked, 11 Pest tests passing (all 11 passing as of 2026-05-28)
 - GitHub Actions: both frontend-ci and backend-ci jobs green
 
@@ -598,4 +599,4 @@ Game Session → ScoreService::validateAndSave()
 | ~~P2~~ **FIXED** | ~~Enemy patrol missing (freeze when far)~~ | ~~`useEnemyAI.ts`~~ (see `FIX_007_DojoCombatRanges_Combo_Patrol.md`) |
 | ~~P2~~ **FIXED** | ~~Player motion trail missing~~ | ~~`Player.tsx`~~ (see `FIX_008_DojoTrail_ImpactPosition.md`) |
 | ~~P2~~ **FIXED** | ~~ImpactParticles fixed at origin~~ | ~~`ImpactParticles.tsx`, `dojoStore.ts`~~ (see `FIX_008_DojoTrail_ImpactPosition.md`) |
-| P2 | Player legs missing on Runner | `GameCanvas.tsx` |
+| ~~P2~~ **FIXED** | ~~Player legs missing on Runner~~ | ~~`GameCanvas.tsx`~~ (see `FIX_009_RunnerLegs_SpeedLevel.md`) |

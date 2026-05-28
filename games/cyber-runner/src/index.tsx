@@ -2,7 +2,7 @@
  * @file index.tsx
  * @description Main entry point for Cyber Runner module.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { GameCanvas } from './components/GameCanvas';
 import { RunnerHUD } from './components/RunnerHUD';
 import { useRunnerStore } from './store/runnerStore';
@@ -10,9 +10,8 @@ import { useGameBridge } from '@sdk/useGameBridge';
 import { GameStatus } from '@sdk/types';
 
 const CyberRunnerGame: React.FC = () => {
-  const { startGame, gameStatus, distance, obstaclesAvoided } = useRunnerStore();
+  const { startGame, gameStatus, distance, obstaclesAvoided, speedLevel } = useRunnerStore();
   const { emitGameOver, requestPause } = useGameBridge('cyber-runner');
-  const [speedLevel, setSpeedLevel] = useState(1);
 
   useEffect(() => {
     startGame();
@@ -30,7 +29,7 @@ const CyberRunnerGame: React.FC = () => {
         completedAt: new Date().toISOString()
       });
     }
-  }, [gameStatus, distance, speedLevel, emitGameOver]);
+  }, [gameStatus, distance, speedLevel, obstaclesAvoided, emitGameOver]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,7 +44,7 @@ const CyberRunnerGame: React.FC = () => {
   return (
     <div className="w-full h-full relative overflow-hidden bg-black">
       <RunnerHUD speedLevel={speedLevel} />
-      <GameCanvas onGameSpeedUpdate={setSpeedLevel} />
+      <GameCanvas />
     </div>
   );
 };
