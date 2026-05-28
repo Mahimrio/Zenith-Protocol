@@ -20,6 +20,7 @@ interface DojoState {
   enemiesKilled: number;
   maxCombo: number;
   dyingEnemyIds: string[];
+  lastHitPosition: [number, number, number];
   
   startGame: () => void;
   takeDamage: (amount: number) => void;
@@ -44,6 +45,7 @@ export const useDojoStore = create<DojoState>((set, _get) => ({
   enemiesKilled: 0,
   maxCombo: 0,
   dyingEnemyIds: [],
+  lastHitPosition: [0, 1, 0],
 
   startGame: () => set({ 
     gameStatus: GameStatus.PLAYING, 
@@ -53,7 +55,8 @@ export const useDojoStore = create<DojoState>((set, _get) => ({
     enemies: [],
     enemiesKilled: 0,
     maxCombo: 0,
-    dyingEnemyIds: []
+    dyingEnemyIds: [],
+    lastHitPosition: [0, 1, 0]
   }),
 
   takeDamage: (amount) => set((state) => {
@@ -91,7 +94,8 @@ export const useDojoStore = create<DojoState>((set, _get) => ({
       maxCombo: Math.max(state.maxCombo, newCombo),
       enemiesKilled: state.enemiesKilled + 1,
       lastKillTime: now,
-      dyingEnemyIds: state.dyingEnemyIds.filter(did => did !== id)
+      dyingEnemyIds: state.dyingEnemyIds.filter(did => did !== id),
+      lastHitPosition: enemy.position
     };
   }),
 
