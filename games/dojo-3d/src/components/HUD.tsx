@@ -36,7 +36,7 @@ export const HUD: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (combo > 1 && comboRef.current) {
+    if (combo >= 3 && comboRef.current) {
       gsap.fromTo(comboRef.current,
         { scale: 1.5, opacity: 0 },
         { scale: 1, opacity: 1, duration: 0.3, ease: 'bounce.out' }
@@ -75,7 +75,7 @@ export const HUD: React.FC = () => {
       </div>
 
       <div className="flex justify-center pb-8">
-        {combo > 1 && (
+        {combo >= 3 && (
           <div ref={comboRef} className="text-4xl font-black italic text-neon-cyan uppercase" style={{ textShadow: '0 0 16px #00f5ff' }}>
             {combo}x COMBO!
           </div>
