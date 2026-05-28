@@ -24,7 +24,7 @@ export const flushQueue = async (): Promise<{ submitted: number; failed: number 
   const results = await Promise.allSettled(
     queue.map(async (entry) => {
       try {
-        const token = localStorage.getItem('zenith-auth-token');
+        const token = localStorage.getItem('token');
         if (!token) {
           throw new Error('No auth token available');
         }

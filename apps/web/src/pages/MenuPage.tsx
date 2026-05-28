@@ -86,8 +86,8 @@ export const MenuPage: React.FC = () => {
     setRankingsOpen(!rankingsOpen);
   }, [rankingsOpen]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

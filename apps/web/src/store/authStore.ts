@@ -25,8 +25,8 @@ interface AuthState {
   login: (user: User, token: string) => void;
   /** Replace the user object (e.g. after score update). */
   updateUser: (user: User) => void;
-  /** Clear all auth state and remove persisted token. */
-  logout: () => void;
+  /** Clear all auth state, remove persisted token, revoke server token. */
+  logout: () => Promise<void>;
 
   /**
    * Register a new account via POST /auth/register.
@@ -48,7 +48,7 @@ interface AuthState {
   fetchMe: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: localStorage.getItem('token'),
   isAuthenticated: false,
@@ -64,7 +64,22 @@ export const useAuthStore = create<AuthState>((set) => ({
   updateUser: (user) => set({ user }),
 
   /* ── Logout ────────────────────────────────────────────────── */
-  logout: () => {
+  logout: async () => {
+    const token = get().token ?? localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        });
+      } catch {
+        // Network error — still clear locally (best effort)
+      }
+    }
     localStorage.removeItem('token');
     set({ user: null, token: null, isAuthenticated: false, error: null });
   },
