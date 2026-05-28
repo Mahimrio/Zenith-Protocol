@@ -2,33 +2,40 @@
  * @file index.tsx
  * @description Main entry point for the 3D Dojo plugin module.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { DojoCanvas } from './components/DojoCanvas';
 import { HUD } from './components/HUD';
 import { useDojoStore } from './store/dojoStore';
 import { useGameBridge } from '@sdk/useGameBridge';
+import { GameStatus } from '@sdk/types';
 
 const Dojo3DModule: React.FC = () => {
-  const { gameStatus, startGame, score, wave, survivedMs } = useDojoStore();
+  const {
+    gameStatus, startGame, score, wave,
+    enemiesKilled, maxCombo
+  } = useDojoStore();
   const { emitGameOver, requestPause } = useGameBridge('dojo-3d');
+  const gameStartTime = useRef<number>(Date.now());
 
   useEffect(() => {
     startGame();
+    gameStartTime.current = Date.now();
   }, [startGame]);
 
   useEffect(() => {
-    if (gameStatus === 'GAME_OVER') {
+    if (gameStatus === GameStatus.GAME_OVER) {
       emitGameOver({
         score,
         metadata: {
+          survivedMs: Date.now() - gameStartTime.current,
           wave,
-          survivedMs,
-          enemiesKilled: Math.floor(score / 150)
+          enemiesKilled,
+          maxCombo,
         },
         completedAt: new Date().toISOString()
       });
     }
-  }, [gameStatus, score, wave, survivedMs, emitGameOver]);
+  }, [gameStatus, score, wave, enemiesKilled, maxCombo, emitGameOver]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

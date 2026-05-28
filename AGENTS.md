@@ -588,8 +588,8 @@ Game Session → ScoreService::validateAndSave()
 | ~~P0~~ **FIXED** | ~~Card score formula mismatch → 422 rejected~~ | ~~`CardScoreService.php`~~ (see `FIX_002_Dojo_Card_ScoreValidation.md`) |
 | ~~P1~~ **FIXED** | ~~Logout never revokes server token~~ | ~~`authStore.ts`~~ (see `FIX_003_AuthLogout_SyncToken.md`) |
 | ~~P1~~ **FIXED** | ~~PWA sync uses wrong localStorage key~~ | ~~`syncWorker.ts`~~ (see `FIX_003_AuthLogout_SyncToken.md`) |
-| P1 | Enemy death has no GSAP animation | `Enemy.tsx`, `dojoStore.ts` |
-| P1 | enemiesKilled + maxCombo not in metadata | `dojoStore.ts`, `index.tsx` |
+| ~~P1~~ **FIXED** | ~~Enemy death has no GSAP animation~~ | ~~`Enemy.tsx`, `dojoStore.ts`~~ (see `FIX_004_DojoDeathAnimation_Metadata.md`) |
+| ~~P1~~ **FIXED** | ~~enemiesKilled + maxCombo not in metadata~~ | ~~`dojoStore.ts`, `index.tsx`~~ (see `FIX_004_DojoDeathAnimation_Metadata.md`) |
 | P1 | obstaclesAvoided always 0 | `runnerStore.ts`, `GameCanvas.tsx` |
 | P1 | Card victory +500 bonus missing | `cardStore.ts`, `index.tsx` |
 | P2 | No 80% inner hitbox on Runner | `collision.ts` |

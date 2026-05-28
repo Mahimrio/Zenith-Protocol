@@ -17,9 +17,13 @@ interface DojoState {
   enemies: EnemyData[];
   combo: number;
   lastKillTime: number;
+  enemiesKilled: number;
+  maxCombo: number;
+  dyingEnemyIds: string[];
   
   startGame: () => void;
   takeDamage: (amount: number) => void;
+  markEnemyDying: (id: string) => void;
   killEnemy: (id: string) => void;
   setEnemies: (enemies: EnemyData[]) => void;
   nextWave: () => void;
@@ -37,13 +41,19 @@ export const useDojoStore = create<DojoState>((set, _get) => ({
   enemies: [],
   combo: 0,
   lastKillTime: 0,
+  enemiesKilled: 0,
+  maxCombo: 0,
+  dyingEnemyIds: [],
 
   startGame: () => set({ 
     gameStatus: GameStatus.PLAYING, 
     wave: 1, score: 0, combo: 0, 
     startTime: Date.now(),
     player: { hp: 100, maxHp: 100, position: [0, 1, 0] },
-    enemies: []
+    enemies: [],
+    enemiesKilled: 0,
+    maxCombo: 0,
+    dyingEnemyIds: []
   }),
 
   takeDamage: (amount) => set((state) => {
@@ -58,6 +68,10 @@ export const useDojoStore = create<DojoState>((set, _get) => ({
     }
     return { player: { ...state.player, hp: newHp }, combo: 0 };
   }),
+
+  markEnemyDying: (id) => set((state) => ({
+    dyingEnemyIds: [...state.dyingEnemyIds, id]
+  })),
 
   killEnemy: (id) => set((state) => {
     const enemy = state.enemies.find(e => e.id === id);
@@ -74,7 +88,10 @@ export const useDojoStore = create<DojoState>((set, _get) => ({
       enemies: state.enemies.filter(e => e.id !== id),
       score: state.score + Math.floor(baseScore * comboMultiplier),
       combo: newCombo,
-      lastKillTime: now
+      maxCombo: Math.max(state.maxCombo, newCombo),
+      enemiesKilled: state.enemiesKilled + 1,
+      lastKillTime: now,
+      dyingEnemyIds: state.dyingEnemyIds.filter(did => did !== id)
     };
   }),
 
