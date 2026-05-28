@@ -9,7 +9,7 @@ test('rejects score that deviates more than 5% from calculation', function () {
     $service = new DojoScoreService();
     
     $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
-    $this->expectExceptionMessage('Score validation failed.');
+    $this->expectExceptionMessage('Score implausible.');
     
     $service->validateAndSave($user, [
         'survival_ms' => 5000,
