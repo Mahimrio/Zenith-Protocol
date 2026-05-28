@@ -70,7 +70,7 @@ export const GameLayout: React.FC = () => {
       gameBus.off('PAUSE_REQUESTED', handlePauseRequested);
       gameBus.off('RESUME_REQUESTED', handleResumeRequested);
     };
-  }, []);
+  }, [submitScore]);
 
   if (!gameId) {
     navigate('/');
