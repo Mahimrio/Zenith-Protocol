@@ -593,9 +593,9 @@ Game Session → ScoreService::validateAndSave()
 | ~~P1~~ **FIXED** | ~~obstaclesAvoided always 0~~ | ~~`runnerStore.ts`, `GameCanvas.tsx`~~ (see `FIX_006_RunnerObstacleCollision.md`) |
 | ~~P1~~ **FIXED** | ~~Card victory +500 bonus missing~~ | ~~`cardStore.ts`, `index.tsx`~~ (see `FIX_005_CardVictoryMetadata.md`) |
 | ~~P2~~ **FIXED** | ~~No 80% inner hitbox on Runner~~ | ~~`collision.ts`~~ (see `FIX_006_RunnerObstacleCollision.md`) |
-| P2 | Dojo attack ranges off (2.0/1.2 → 1.5/1.5) | `useCombat.ts`, `useEnemyAI.ts` |
-| P2 | Combo shows at 2+ kills (should be 3+) | `HUD.tsx` |
-| P2 | Enemy patrol missing (freeze when far) | `useEnemyAI.ts` |
+| ~~P2~~ **FIXED** | ~~Dojo attack ranges off (2.0/1.2 → 1.5/1.5)~~ | ~~`useCombat.ts`, `useEnemyAI.ts`~~ (see `FIX_007_DojoCombatRanges_Combo_Patrol.md`) |
+| ~~P2~~ **FIXED** | ~~Combo shows at 2+ kills (should be 3+)~~ | ~~`HUD.tsx`~~ (see `FIX_007_DojoCombatRanges_Combo_Patrol.md`) |
+| ~~P2~~ **FIXED** | ~~Enemy patrol missing (freeze when far)~~ | ~~`useEnemyAI.ts`~~ (see `FIX_007_DojoCombatRanges_Combo_Patrol.md`) |
 | P2 | Player motion trail missing | `Player.tsx` |
 | P2 | ImpactParticles fixed at origin | `ImpactParticles.tsx`, `dojoStore.ts` |
 | P2 | Player legs missing on Runner | `GameCanvas.tsx` |
