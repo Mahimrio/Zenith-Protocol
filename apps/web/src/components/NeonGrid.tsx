@@ -3,7 +3,7 @@
  * @description Full-viewport dynamic animated neon background with grid,
  * floating particles, and ambient light orbs.
  */
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
 const PARTICLE_COUNT = 30;
@@ -16,6 +16,9 @@ interface Particle {
   speed: number;
   opacity: number;
   delay: number;
+  kf25: { ty: number; tx: number };
+  kf50: { ty: number; tx: number };
+  kf75: { ty: number; tx: number };
 }
 
 interface Orb {
@@ -24,6 +27,46 @@ interface Orb {
   size: number;
   color: string;
   duration: number;
+}
+
+/* ── Seeded PRNG for stable randomness across renders ────────────── */
+function createRng(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rng = createRng(42);
+
+const particles: Particle[] = [];
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+  particles.push({
+    x: rng() * 100,
+    y: rng() * 100,
+    size: 1.5 + rng() * 2.5,
+    speed: 20 + rng() * 40,
+    opacity: 0.15 + rng() * 0.35,
+    delay: rng() * 5,
+    kf25: { ty: 30 + rng() * 40, tx: 10 + rng() * 20 },
+    kf50: { ty: 60 + rng() * 60, tx: -5 + rng() * 10 },
+    kf75: { ty: 30 + rng() * 40, tx: -15 + rng() * 15 },
+  });
+}
+
+const colors = ['rgba(0,245,255,0.06)', 'rgba(139,92,246,0.05)', 'rgba(245,158,11,0.04)'];
+const orbs: Orb[] = [];
+for (let i = 0; i < ORB_COUNT; i++) {
+  orbs.push({
+    x: 10 + rng() * 80,
+    y: 10 + rng() * 80,
+    size: 300 + rng() * 400,
+    color: colors[i % colors.length],
+    duration: 25 + rng() * 20,
+  });
 }
 
 export const NeonGrid: React.FC = () => {
@@ -38,36 +81,6 @@ export const NeonGrid: React.FC = () => {
         ease: 'linear'
       });
     }
-  }, []);
-
-  const particles = useMemo<Particle[]>(() => {
-    const arr: Particle[] = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      arr.push({
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 1.5 + Math.random() * 2.5,
-        speed: 20 + Math.random() * 40,
-        opacity: 0.15 + Math.random() * 0.35,
-        delay: Math.random() * 5,
-      });
-    }
-    return arr;
-  }, []);
-
-  const orbs = useMemo<Orb[]>(() => {
-    const colors = ['rgba(0,245,255,0.06)', 'rgba(139,92,246,0.05)', 'rgba(245,158,11,0.04)'];
-    const arr: Orb[] = [];
-    for (let i = 0; i < ORB_COUNT; i++) {
-      arr.push({
-        x: 10 + Math.random() * 80,
-        y: 10 + Math.random() * 80,
-        size: 300 + Math.random() * 400,
-        color: colors[i % colors.length],
-        duration: 25 + Math.random() * 20,
-      });
-    }
-    return arr;
   }, []);
 
   return (
@@ -101,9 +114,9 @@ export const NeonGrid: React.FC = () => {
           <style>{`
             @keyframes float-${i} {
               0%, 100% { transform: translateY(0px) translateX(0px); opacity: ${p.opacity}; }
-              25% { transform: translateY(-${30 + Math.random() * 40}px) translateX(${10 + Math.random() * 20}px); opacity: ${p.opacity + 0.1}; }
-              50% { transform: translateY(-${60 + Math.random() * 60}px) translateX(${-5 + Math.random() * 10}px); opacity: ${p.opacity}; }
-              75% { transform: translateY(-${30 + Math.random() * 40}px) translateX(${-15 + Math.random() * 15}px); opacity: ${p.opacity + 0.15}; }
+              25% { transform: translateY(-${p.kf25.ty}px) translateX(${p.kf25.tx}px); opacity: ${p.opacity + 0.1}; }
+              50% { transform: translateY(-${p.kf50.ty}px) translateX(${p.kf50.tx}px); opacity: ${p.opacity}; }
+              75% { transform: translateY(-${p.kf75.ty}px) translateX(${p.kf75.tx}px); opacity: ${p.opacity + 0.15}; }
             }
           `}</style>
           <div
