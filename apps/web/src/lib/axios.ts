@@ -31,7 +31,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
+      void useAuthStore.getState().logout();
       // Redirect without React Router (works from outside component tree)
       window.location.href = '/login';
     }
