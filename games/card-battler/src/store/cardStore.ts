@@ -35,6 +35,7 @@ interface CardState {
   isVictory: boolean;
 
   spectatorMode: boolean;
+  serverSessionId: string | null;
   toggleSpectatorMode: () => void;
 
   startGame: () => void;
@@ -76,6 +77,7 @@ export const useCardStore = create<CardState>((set, get) => ({
   turnsSurvived: 0,
   isVictory: false,
   spectatorMode: false,
+  serverSessionId: null,
 
   toggleSpectatorMode: () => set(state => ({ spectatorMode: !state.spectatorMode })),
 
@@ -100,10 +102,31 @@ export const useCardStore = create<CardState>((set, get) => ({
       cardsPlayed: 0,
       turnsSurvived: 0,
       isVictory: false,
-      spectatorMode: false
+      spectatorMode: false,
+      serverSessionId: null
     });
     get().drawCard('player', 4);
     get().drawCard('enemy', 4);
+
+    // Init server session (fire-and-forget, don't block UI)
+    const token = localStorage.getItem('token');
+    if (token) {
+      void fetch('/api/games/card/sessions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      }).then(async res => {
+        if (res.ok) {
+          const data = await res.json();
+          set({ serverSessionId: data.session_id });
+        }
+      }).catch(() => {
+        // Offline — continue with local-only validation
+      });
+    }
   },
 
   drawCard: (target = 'player', amount = 1) => set(state => {
@@ -163,6 +186,31 @@ export const useCardStore = create<CardState>((set, get) => ({
     if (card.type === 'attack' || card.type === 'spell') {
        playSfx('/sounds/card/attack.mp3');
        get().takeDamage('enemy', card.power);
+    }
+
+    // Notify server of the move (fire-and-forget, don't block UI)
+    const sessionId = get().serverSessionId;
+    const token = localStorage.getItem('token');
+    if (sessionId && token) {
+      void fetch('/api/games/card/moves', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          move_type: 'play_card',
+          card_id: card.id,
+        }),
+      }).then(async res => {
+        if (!res.ok) {
+          console.warn('[CardBattler] Server rejected move', await res.json());
+        }
+      }).catch(() => {
+        // Network error — local state already applied, continue
+      });
     }
     return true;
   },

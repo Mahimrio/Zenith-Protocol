@@ -16,6 +16,7 @@ import { GlassCard } from '@ui/GlassCard';
 import { useIsMobile } from '@sdk/utils/device';
 import { GameOverModal } from '../components/GameOverModal';
 import { PauseMenu } from '../components/PauseMenu';
+import { useScoreSubmit } from '../hooks/useScoreSubmit';
 
 export const GameLayout: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -25,6 +26,7 @@ export const GameLayout: React.FC = () => {
   const [isPortrait, setIsPortrait] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const { submitScore } = useScoreSubmit();
 
   useEffect(() => {
     if (gameId) {
@@ -50,6 +52,7 @@ export const GameLayout: React.FC = () => {
     const handleGameOver = (result: GameResult) => {
       setGameResult(result);
       setIsPaused(false);
+      void submitScore(result);
     };
     const handlePauseRequested = () => {
       setIsPaused(true);

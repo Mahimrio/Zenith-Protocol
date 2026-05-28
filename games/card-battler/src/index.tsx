@@ -25,7 +25,7 @@ const CardBattlerGame: React.FC = () => {
   }, [startGame]);
 
   useEffect(() => {
-    if (gameStatus === GameStatus.GAME_OVER) {
+    if (gameStatus === GameStatus.GAME_OVER && !spectatorMode) {
       const state = useCardStore.getState();
       const finalScore = (state.turnsSurvived * 100)
         + (state.cardsPlayed * 25)
@@ -38,7 +38,7 @@ const CardBattlerGame: React.FC = () => {
           finalEnemyHp: state.enemyHp,
         },
         completedAt: new Date().toISOString()
-      }, spectatorMode);
+      });
     }
   }, [gameStatus, spectatorMode, emitGameOver]);
 
