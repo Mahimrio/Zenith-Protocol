@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-28
-> **All 15 audit bugs fixed.** ✅
+> **All 17 audit bugs fixed.** ✅
 
 ---
 
@@ -555,7 +555,7 @@ Game Session → ScoreService::validateAndSave()
 
 ## CI STATUS
 
-- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (751 modules)
+- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (752 modules)
 - Backend: PHP 8.3 platform locked, 11 Pest tests passing (all 11 passing as of 2026-05-28)
 - GitHub Actions: both frontend-ci and backend-ci jobs green
 
@@ -600,3 +600,5 @@ Game Session → ScoreService::validateAndSave()
 | ~~P2~~ **FIXED** | ~~Player motion trail missing~~ | ~~`Player.tsx`~~ (see `FIX_008_DojoTrail_ImpactPosition.md`) |
 | ~~P2~~ **FIXED** | ~~ImpactParticles fixed at origin~~ | ~~`ImpactParticles.tsx`, `dojoStore.ts`~~ (see `FIX_008_DojoTrail_ImpactPosition.md`) |
 | ~~P2~~ **FIXED** | ~~Player legs missing on Runner~~ | ~~`GameCanvas.tsx`~~ (see `FIX_009_RunnerLegs_SpeedLevel.md`) |
+| ~~P0~~ **FIXED** | ~~Card moves never sent to server for validation~~ | ~~`cardStore.ts`~~ (see `FIX_010_ServerMoveValidation_ScoreSubmit.md`) |
+| ~~P1~~ **FIXED** | ~~Score submission uses raw fetch with no retry/offline~~ | ~~`useGameBridge.ts`, `GameLayout.tsx`~~ (see `FIX_010_ServerMoveValidation_ScoreSubmit.md`) |
