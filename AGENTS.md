@@ -2,8 +2,8 @@
 
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
-> **Last updated:** 2026-05-28
-> **All 17 audit bugs fixed.** ✅
+> **Last updated:** 2026-05-30
+> **All 17 audit bugs fixed + 1 post-audit fix.** ✅
 
 ---
 
@@ -307,7 +307,7 @@ Zenith Protocol/
 | `DojoController.php` | store() → DojoScoreService |
 | `CardBattlerController.php` | store() → CardScoreService, initSession(), playMove() → CardMoveService |
 | `RunnerController.php` | store() → RunnerScoreService |
-| `LeaderboardController.php` | index() — cached 60s, returns data[] + meta{your_rank, your_score} |
+| `LeaderboardController.php` | index() — cached 60s by `leaderboard_{gameId}`, busted by score services, returns data[] + meta{your_rank, your_score} |
 | `UserSessionController.php` | index() — all sessions for authenticated user |
 | `AchievementController.php` | index() — grouped by game_id, unlocked status + progress % |
 | `DailyChallengeController.php` | index() — today's 3 challenges, user completion, resets_at, earned today |
@@ -602,3 +602,4 @@ Game Session → ScoreService::validateAndSave()
 | ~~P2~~ **FIXED** | ~~Player legs missing on Runner~~ | ~~`GameCanvas.tsx`~~ (see `FIX_009_RunnerLegs_SpeedLevel.md`) |
 | ~~P0~~ **FIXED** | ~~Card moves never sent to server for validation~~ | ~~`cardStore.ts`~~ (see `FIX_010_ServerMoveValidation_ScoreSubmit.md`) |
 | ~~P1~~ **FIXED** | ~~Score submission uses raw fetch with no retry/offline~~ | ~~`useGameBridge.ts`, `GameLayout.tsx`~~ (see `FIX_010_ServerMoveValidation_ScoreSubmit.md`) |
+| ~~P1~~ **FIXED** | ~~Leaderboard cache key mismatch — key `leaderboard_{gameId}_{limit}` doesn't match forgot key `leaderboard_{gameId}`~~ | ~~`LeaderboardController.php`~~ (see `FIX_011_LeaderboardCacheKey.md`) |

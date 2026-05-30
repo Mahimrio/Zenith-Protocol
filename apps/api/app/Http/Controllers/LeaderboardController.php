@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Cache;
  *  - data: top N entries (default/max 100)
  *  - meta: game_id, authenticated user's personal rank/score, timestamp
  *
- * Cached for 60s per game+limit key. Cache is busted by score services
- * on each new validated submission.
+ * Cached for 60s per game. Cache is busted by score services
+ * on each new validated submission using the same key.
  */
 class LeaderboardController extends Controller {
     public function index(Request $request, LeaderboardRepositoryInterface $repository): JsonResponse {
@@ -25,7 +25,7 @@ class LeaderboardController extends Controller {
         $limit  = min((int) $request->query('limit', '100'), 100);
         $user   = $request->user();
 
-        $cacheKey    = "leaderboard_{$gameId}_{$limit}";
+        $cacheKey    = "leaderboard_{$gameId}";
         $leaderboard = Cache::remember($cacheKey, 60, function () use ($repository, $gameId, $limit) {
             return $repository->getTopScores($gameId, $limit);
         });
