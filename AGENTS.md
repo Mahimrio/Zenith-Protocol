@@ -197,7 +197,7 @@ Zenith Protocol/
 | `store/authStore.ts` | user, token, isAuthenticated, error | login(), logout(), register(), fetchMe(), updateUser() |
 | `store/leaderboardStore.ts` | entries[], myRank, myScore, activeGame | fetchLeaderboard(), insertOrUpdateEntry(), setActiveGame() |
 | `store/gameStore.ts` | registeredGames[], activeGame | registerGame(), launchGame(), closeGame() |
-| `store/achievementStore.ts` | achievements[], unlocked (Set), pendingToast queue | fetchAchievements(), unlockAchievement(), clearToast() |
+| `store/achievementStore.ts` | achievements[], unlocked (Set), toastQueue (FIFO), pendingToast queue | fetchAchievements(), unlockAchievement(), clearToast() |
 | `store/challengeStore.ts` | challenges[], resetsAt, totalEarnedToday, isLoading | fetchChallenges(), markCompleted(id) |
 
 ### Hooks
