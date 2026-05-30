@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 5 post-audit fixes + 5 UI/UX improvements.** ✅
+> **All 17 audit bugs fixed + 5 post-audit fixes + 6 UI/UX improvements.** ✅
 
 ---
 
@@ -217,7 +217,7 @@ Zenith Protocol/
 
 | File | Purpose |
 |------|---------|
-| `components/Navbar.tsx` | Top nav: logo, score, speaker mute (GSAP wiggle), settings gear, avatar dropdown |
+| `components/Navbar.tsx` | Top nav: logo, breadcrumb, exit-to-menu button during gameplay, score, speaker mute (GSAP wiggle), settings gear, avatar dropdown |
 | `components/NeonGrid.tsx` | Full-viewport animated neon grid background (GSAP pan) |
 | `components/GameCard.tsx` | Game card with thumbnail, tags, deploy button, GSAP hover/click |
 | `components/GameGrid.tsx` | Responsive grid with ScrollTrigger stagger entrance |

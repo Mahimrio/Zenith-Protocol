@@ -83,6 +83,25 @@ export const Navbar: React.FC = () => {
                 <span className="text-neon-purple shadow-[0_0_4px_#8b5cf640] uppercase tracking-wider">{game.name}</span>
               </div>
             )}
+
+            {activeGame && (
+              <button
+                onClick={() => {
+                  if (window.confirm('Leave game? Your current run will not be saved.')) {
+                    navigate('/');
+                  }
+                }}
+                className="flex items-center gap-1 text-text-muted hover:text-neon-cyan
+                           transition-colors duration-200 text-sm font-mono ml-4"
+                aria-label="Exit to menu"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5"
+                        strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="hidden sm:inline">Menu</span>
+              </button>
+            )}
           </div>
         </div>
 
