@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 5 post-audit fixes + 4 UI/UX improvements.** ✅
+> **All 17 audit bugs fixed + 5 post-audit fixes + 5 UI/UX improvements.** ✅
 
 ---
 
@@ -616,3 +616,4 @@ Game Session → ScoreService::validateAndSave()
 | ~~P3~~ **FIXED** | ~~Loading screen doesn't show game name~~ | ~~`GlobalLoadingScreen.tsx`, `GameLayout.tsx`~~ (see `FIX_UI_UX_3A_3B.md`) |
 | ~~P3~~ **FIXED** | ~~No score submission success feedback~~ | ~~`GameLayout.tsx`, `GameOverModal.tsx`~~ (see `FIX_UI_UX_3A_3B.md`) |
 | ~~P2~~ **FIXED** | ~~No Escape-to-pause hint for new players~~ | ~~`GameLayout.tsx`~~ (see `FIX_EscHint.md`) |
+| ~~P2~~ **FIXED** | ~~No onboarding for users with 0 games played~~ | ~~`MenuPage.tsx`~~ (see `FIX_WelcomeToast.md`) |

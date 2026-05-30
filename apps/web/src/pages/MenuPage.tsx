@@ -12,6 +12,7 @@ import { GameGrid } from '../components/GameGrid';
 import { Leaderboard } from '../components/Leaderboard';
 import { DailyChallengeBanner } from '../components/DailyChallengeBanner';
 import { NeonButton } from '@ui/NeonButton';
+import { GlassCard } from '@ui/GlassCard';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -31,9 +32,11 @@ export const MenuPage: React.FC = () => {
 
   /* ── Rankings collapse state ────────────────────────────────────── */
   const [rankingsOpen, setRankingsOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const rankingsContentRef = useRef<HTMLDivElement>(null);
   const rankingsWrapperRef = useRef<HTMLDivElement>(null);
   const chevronRef = useRef<HTMLSpanElement>(null);
+  const welcomeRef = useRef<HTMLDivElement>(null);
 
   /* ── Title letter animation ─────────────────────────────────────── */
   useEffect(() => {
@@ -54,6 +57,35 @@ export const MenuPage: React.FC = () => {
   }, []);
 
   useEffect(() => { document.title = 'Zenith Protocol' }, []);
+
+  /* ── Welcome toast for first-time users ────────────────────────── */
+  useEffect(() => {
+    if (!user) return;
+    if (user.games_played === 0) {
+      const shown = localStorage.getItem('zenith-welcome-shown');
+      if (!shown) {
+        localStorage.setItem('zenith-welcome-shown', 'true');
+        const showTimer = setTimeout(() => setShowWelcome(true), 1500);
+        const hideTimer = setTimeout(() => setShowWelcome(false), 6500);
+        return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
+      }
+    }
+  }, [user]);
+
+  /* ── GSAP welcome entrance/exit ────────────────────────────────── */
+  useEffect(() => {
+    if (!welcomeRef.current) return;
+    if (showWelcome) {
+      gsap.fromTo(welcomeRef.current,
+        { y: -100, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' },
+      );
+    } else {
+      gsap.to(welcomeRef.current,
+        { y: -100, opacity: 0, duration: 0.4, ease: 'power2.in' },
+      );
+    }
+  }, [showWelcome]);
 
   const titleText = "ZENITH PROTOCOL".split('');
 
@@ -173,6 +205,20 @@ export const MenuPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Welcome toast for first-time users ──────────────────── */}
+      {showWelcome && (
+        <div ref={welcomeRef} className="fixed top-6 right-6 z-50 max-w-xs">
+          <GlassCard glowColor="neon-cyan" className="p-4">
+            <p className="text-text-primary font-bold text-sm">
+              Welcome, Operative 👋
+            </p>
+            <p className="text-text-muted text-xs mt-1">
+              Choose a game above and deploy your first session.
+            </p>
+          </GlassCard>
+        </div>
+      )}
 
       <footer className="fixed bottom-0 w-full h-16 bg-bg-secondary/80 backdrop-blur-md border-t border-border-glass flex items-center justify-between px-8 z-20">
         <div className="flex items-center gap-4">
