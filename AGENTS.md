@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 5 post-audit fixes + 2 UI/UX improvements.** ✅
+> **All 17 audit bugs fixed + 5 post-audit fixes + 3 UI/UX improvements.** ✅
 
 ---
 
@@ -221,8 +221,8 @@ Zenith Protocol/
 | `components/NeonGrid.tsx` | Full-viewport animated neon grid background (GSAP pan) |
 | `components/GameCard.tsx` | Game card with thumbnail, tags, deploy button, GSAP hover/click |
 | `components/GameGrid.tsx` | Responsive grid with ScrollTrigger stagger entrance |
-| `components/GameOverModal.tsx` | Slide-up modal with final score, play again / menu buttons |
-| `components/GlobalLoadingScreen.tsx` | Suspense fallback — animated SVG ring |
+| `components/GameOverModal.tsx` | Slide-up modal with final score, scoreSaved feedback, play again / menu buttons |
+| `components/GlobalLoadingScreen.tsx` | Suspense fallback — animated SVG ring, optional gameName prop |
 | `components/PauseMenu.tsx` | Listens to PAUSE_REQUESTED/RESUME_REQUESTED events |
 | `components/RouteErrorScreen.tsx` | Error boundary for route errors |
 | `components/ProtectedRoute.tsx` | Token hydration → fetchMe → loading → Outlet. requireAdmin prop ready |
@@ -613,3 +613,5 @@ Game Session → ScoreService::validateAndSave()
 | ~~P3~~ **FIXED** | ~~Missing page title changes per route~~ | ~~`MenuPage.tsx`, `LoginPage.tsx`, `RegisterPage.tsx`, `ProfilePage.tsx`, `GameLayout.tsx`~~ (see `FIX_D1_D2.md`) |
 | ~~P2~~ **FIXED** | ~~SettingsModal lacks Escape-to-close keyboard shortcut~~ | ~~`SettingsModal.tsx`~~ (see `FIX_UI_UX_2A_2B.md`) |
 | ~~P2~~ **FIXED** | ~~Orientation overlay doesn't block touch pass-through to R3F~~ | ~~`GameLayout.tsx`~~ (see `FIX_UI_UX_2A_2B.md`) |
+| ~~P3~~ **FIXED** | ~~Loading screen doesn't show game name~~ | ~~`GlobalLoadingScreen.tsx`, `GameLayout.tsx`~~ (see `FIX_UI_UX_3A_3B.md`) |
+| ~~P3~~ **FIXED** | ~~No score submission success feedback~~ | ~~`GameLayout.tsx`, `GameOverModal.tsx`~~ (see `FIX_UI_UX_3A_3B.md`) |

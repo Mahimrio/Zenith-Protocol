@@ -14,10 +14,12 @@ export interface GameOverModalProps {
   result: GameResult;
   onPlayAgain: () => void;
   onMenu: () => void;
+  scoreSaved?: boolean;
 }
 
-export const GameOverModal: React.FC<GameOverModalProps> = ({ result, onPlayAgain, onMenu }) => {
+export const GameOverModal: React.FC<GameOverModalProps> = ({ result, onPlayAgain, onMenu, scoreSaved }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const savedRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -29,6 +31,15 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result, onPlayAgai
     }
   }, []);
 
+  useEffect(() => {
+    if (savedRef.current) {
+      gsap.fromTo(savedRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: 'power2.out' }
+      );
+    }
+  }, [scoreSaved]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div ref={modalRef} className="w-full max-w-md">
@@ -39,6 +50,13 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result, onPlayAgai
           
           <div className="w-full bg-black/40 rounded-xl p-6 mb-8 border border-border-glass shadow-inner">
             <ScoreDisplay score={result.score} label="Final Score" animated className="mb-6" />
+
+            {scoreSaved && (
+              <div ref={savedRef} className="flex items-center gap-2 text-neon-green text-sm mb-4 justify-center">
+                <span>✓</span>
+                <span className="font-mono">Score saved</span>
+              </div>
+            )}
             
             <div className="flex justify-between items-center text-sm font-mono border-t border-border-glass pt-4 mt-2">
               <span className="text-text-muted uppercase">Global Points</span>

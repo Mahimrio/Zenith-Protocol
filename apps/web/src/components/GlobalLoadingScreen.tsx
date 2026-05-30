@@ -5,7 +5,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
-export const GlobalLoadingScreen: React.FC = () => {
+export const GlobalLoadingScreen: React.FC<{ gameName?: string }> = ({ gameName }) => {
   const ringRef = useRef<SVGCircleElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
 
@@ -57,6 +57,11 @@ export const GlobalLoadingScreen: React.FC = () => {
       <div ref={textRef} className="text-neon-cyan font-mono tracking-widest text-sm uppercase">
         Loading module...
       </div>
+      {gameName && (
+        <p className="text-text-muted text-sm mt-4 font-mono tracking-widest uppercase animate-pulse">
+          Loading {gameName}...
+        </p>
+      )}
     </div>
   );
 };

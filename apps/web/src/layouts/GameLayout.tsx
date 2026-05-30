@@ -26,15 +26,17 @@ export const GameLayout: React.FC = () => {
   const [isPortrait, setIsPortrait] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
   const { submitScore } = useScoreSubmit();
 
+  const gameNames: Record<string, string> = {
+    'dojo-3d': 'Dojo Fighter',
+    'card-battler': 'Card Battler',
+    'cyber-runner': 'Cyber Runner',
+  }
+
   useEffect(() => {
-    const names: Record<string, string> = {
-      'dojo-3d': 'Dojo Fighter',
-      'card-battler': 'Card Battler',
-      'cyber-runner': 'Cyber Runner',
-    }
-    document.title = `${names[gameId ?? ''] ?? 'Game'} — Zenith Protocol`
+    document.title = `${gameNames[gameId ?? ''] ?? 'Game'} — Zenith Protocol`
   }, [gameId])
 
   useEffect(() => {
@@ -61,7 +63,12 @@ export const GameLayout: React.FC = () => {
     const handleGameOver = (result: GameResult) => {
       setGameResult(result);
       setIsPaused(false);
-      void submitScore(result);
+      void submitScore(result).then(() => {
+        setScoreSaved(true);
+        setTimeout(() => setScoreSaved(false), 3000);
+      }).catch(() => {
+        // score queued offline — OfflineBanner handles feedback
+      });
     };
     const handlePauseRequested = () => {
       setIsPaused(true);
@@ -119,7 +126,7 @@ export const GameLayout: React.FC = () => {
 
   return (
       <div className="w-screen h-screen overflow-hidden bg-black relative">
-      <Suspense fallback={<GlobalLoadingScreen />}>
+      <Suspense fallback={<GlobalLoadingScreen gameName={gameNames[gameId ?? '']} />}>
         <div className={showOrientationWarning ? 'pointer-events-none' : ''}>
           <GameComponent />
         </div>
@@ -131,6 +138,7 @@ export const GameLayout: React.FC = () => {
           result={gameResult}
           onPlayAgain={handlePlayAgain}
           onMenu={handleMenu}
+          scoreSaved={scoreSaved}
         />
       )}
 
