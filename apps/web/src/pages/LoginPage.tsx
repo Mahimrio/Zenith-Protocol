@@ -2,7 +2,7 @@
  * @file LoginPage.tsx
  * @description Sleek neon-themed login page.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { GlassCard } from '@ui/GlassCard';
@@ -17,6 +17,8 @@ export const LoginPage: React.FC = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => { document.title = 'Sign In — Zenith Protocol' }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -3,7 +3,7 @@
  * @description Cyberpunk-themed registration page matching LoginPage aesthetics.
  * Uses NeonGrid background, centered GlassCard, and GSAP error animations.
  */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@store/authStore';
 import { GlassCard } from '@ui/GlassCard';
@@ -22,6 +22,8 @@ export const RegisterPage: React.FC = () => {
   const errorRef = useRef<HTMLDivElement>(null);
   const { register } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => { document.title = 'Create Account — Zenith Protocol' }, []);
 
   /** Animate the error banner in with GSAP */
   const showError = (message: string) => {

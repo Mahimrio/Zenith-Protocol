@@ -31,6 +31,8 @@ export default function ProfilePage() {
   const cardsRef = useRef<Array<HTMLDivElement | null>>([])
   const [isUploading, setIsUploading] = useState(false)
 
+  useEffect(() => { document.title = 'Profile — Zenith Protocol' }, [])
+
   // Entrance animations
   useEffect(() => {
     if (!isLoadingProfile && profile) {

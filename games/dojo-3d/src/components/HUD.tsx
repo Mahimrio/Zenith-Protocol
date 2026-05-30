@@ -15,7 +15,7 @@ import type { JoystickVector } from './VirtualJoystick';
 import { AttackButton } from './AttackButton';
 
 export const HUD: React.FC = () => {
-  const { player, score, combo, enemies } = useDojoStore();
+  const { player, score, combo, wave, enemies } = useDojoStore();
   const { waveState, countdown } = useWaveManager();
   const { setJoystickVector, triggerTouchAttack } = usePlayerController();
   
@@ -54,7 +54,7 @@ export const HUD: React.FC = () => {
         <div className="flex flex-col items-center">
           <GlassCard className="px-8 py-4 pointer-events-auto flex flex-col items-center border-neon-cyan shadow-[0_0_8px_#00f5ff40]">
             <span className="text-neon-cyan font-mono tracking-widest text-sm mb-1 uppercase">
-              {waveState === 'WAVE_CLEAR' ? 'WAVE CLEAR' : `WAVE ${useDojoStore.getState().wave}`}
+              {waveState === 'WAVE_CLEAR' ? 'WAVE CLEAR' : `WAVE ${wave}`}
             </span>
             <ScoreDisplay score={score} animated />
           </GlassCard>
