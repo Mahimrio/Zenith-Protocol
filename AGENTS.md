@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 1 post-audit fix.** ✅
+> **All 17 audit bugs fixed + 3 post-audit fixes.** ✅
 
 ---
 
@@ -556,7 +556,7 @@ Game Session → ScoreService::validateAndSave()
 ## CI STATUS
 
 - Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (752 modules)
-- Backend: PHP 8.3 platform locked, 11 Pest tests passing (all 11 passing as of 2026-05-28)
+- Backend: PHP 8.3 platform locked, 11 Pest tests passing (all 11 passing as of 2026-05-30)
 - GitHub Actions: both frontend-ci and backend-ci jobs green
 
 ---
@@ -603,3 +603,5 @@ Game Session → ScoreService::validateAndSave()
 | ~~P0~~ **FIXED** | ~~Card moves never sent to server for validation~~ | ~~`cardStore.ts`~~ (see `FIX_010_ServerMoveValidation_ScoreSubmit.md`) |
 | ~~P1~~ **FIXED** | ~~Score submission uses raw fetch with no retry/offline~~ | ~~`useGameBridge.ts`, `GameLayout.tsx`~~ (see `FIX_010_ServerMoveValidation_ScoreSubmit.md`) |
 | ~~P1~~ **FIXED** | ~~Leaderboard cache key mismatch — key `leaderboard_{gameId}_{limit}` doesn't match forgot key `leaderboard_{gameId}`~~ | ~~`LeaderboardController.php`~~ (see `FIX_011_LeaderboardCacheKey.md`) |
+| ~~P2~~ **FIXED** | ~~Debug console.log in Runner GameCanvas~~ | ~~`GameCanvas.tsx`~~ (see `FIX_B1_B2.md`) |
+| ~~P2~~ **FIXED** | ~~Wrong VITE_API_URL in .env.example + missing VITE_REVERB_SCHEME~~ | ~~`.env.example`~~ (see `FIX_B1_B2.md`) |

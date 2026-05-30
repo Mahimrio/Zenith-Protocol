@@ -122,7 +122,6 @@ export const GameCanvas: React.FC = () => {
         h: obs.height
       };
       if (checkPlayerObstacleCollision(pHitbox, oHitbox, player.isSliding)) {
-        console.log('COLLISION DETECTED', pHitbox, oHitbox);
         hit = true;
         break;
       }
