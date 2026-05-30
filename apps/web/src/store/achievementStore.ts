@@ -44,8 +44,8 @@ interface AchievementState {
   achievements: AchievementGroup[];
   /** Flat set of unlocked slugs for quick lookup. */
   unlocked: Set<string>;
-  /** Queue of toasts waiting to be displayed. */
-  pendingToast: AchievementToastItem | null;
+  /** FIFO queue of toasts waiting to be displayed. */
+  toastQueue: AchievementToastItem[];
   isLoading: boolean;
 
   /** Fetch achievements from REST endpoint. */
@@ -64,7 +64,7 @@ interface AchievementState {
 export const useAchievementStore = create<AchievementState>((set, get) => ({
   achievements: [],
   unlocked: new Set(),
-  pendingToast: null,
+  toastQueue: [],
   isLoading: false,
 
   fetchAchievements: async () => {
@@ -94,13 +94,15 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
     const newUnlocked = new Set(unlocked);
     newUnlocked.add(data.slug);
 
-    set({
+    set((state) => ({
       unlocked: newUnlocked,
-      pendingToast: data,
-    });
+      toastQueue: [...state.toastQueue, data],
+    }));
   },
 
   clearToast: () => {
-    set({ pendingToast: null });
+    set((state) => ({
+      toastQueue: state.toastQueue.slice(1),
+    }));
   },
 }));
