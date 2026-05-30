@@ -18,11 +18,12 @@ import { GlassCard } from '@ui/GlassCard';
  * Auto-dismisses after 3 seconds with a GSAP slide-out animation.
  */
 export const AchievementToast: React.FC = () => {
-  const { pendingToast, clearToast } = useAchievementStore();
+  const currentToast = useAchievementStore((s) => s.toastQueue[0] ?? null);
+  const clearToast = useAchievementStore((s) => s.clearToast);
   const toastRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!pendingToast || !toastRef.current) return;
+    if (!currentToast || !toastRef.current) return;
 
     const tl = gsap.timeline();
 
@@ -42,9 +43,9 @@ export const AchievementToast: React.FC = () => {
     return () => {
       tl.kill();
     };
-  }, [pendingToast, clearToast]);
+  }, [currentToast, clearToast]);
 
-  if (!pendingToast) return null;
+  if (!currentToast) return null;
 
   return (
     <div className="fixed top-4 right-4 z-50 w-80">
@@ -52,7 +53,7 @@ export const AchievementToast: React.FC = () => {
         <GlassCard glowColor="neon-amber" className="p-4 flex items-start gap-3">
           {/* Trophy icon */}
           <div className="text-3xl flex-shrink-0 mt-0.5">
-            {pendingToast.icon}
+            {currentToast.icon}
           </div>
 
           {/* Content */}
@@ -61,10 +62,10 @@ export const AchievementToast: React.FC = () => {
               Achievement Unlocked
             </div>
             <div className="text-sm font-semibold text-text-primary truncate">
-              {pendingToast.name}
+              {currentToast.name}
             </div>
             <div className="text-xs text-text-muted mt-0.5 leading-snug">
-              {pendingToast.description}
+              {currentToast.description}
             </div>
           </div>
         </GlassCard>
