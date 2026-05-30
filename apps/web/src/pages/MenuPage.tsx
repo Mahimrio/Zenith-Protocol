@@ -53,6 +53,8 @@ export const MenuPage: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => { document.title = 'Zenith Protocol' }, []);
+
   const titleText = "ZENITH PROTOCOL".split('');
 
   /* ── Rankings expand/collapse animation ─────────────────────────── */

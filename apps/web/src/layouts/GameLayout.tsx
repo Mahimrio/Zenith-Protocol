@@ -29,6 +29,15 @@ export const GameLayout: React.FC = () => {
   const { submitScore } = useScoreSubmit();
 
   useEffect(() => {
+    const names: Record<string, string> = {
+      'dojo-3d': 'Dojo Fighter',
+      'card-battler': 'Card Battler',
+      'cyber-runner': 'Cyber Runner',
+    }
+    document.title = `${names[gameId ?? ''] ?? 'Game'} — Zenith Protocol`
+  }, [gameId])
+
+  useEffect(() => {
     if (gameId) {
       launchGame(gameId);
     }

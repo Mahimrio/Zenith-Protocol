@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 4 post-audit fixes.** ✅
+> **All 17 audit bugs fixed + 5 post-audit fixes.** ✅
 
 ---
 
@@ -609,3 +609,5 @@ Game Session → ScoreService::validateAndSave()
 | ~~P1~~ **FIXED** | ~~Private channel user.{userId} has no auth callback — achievement toasts broken~~ | ~~`channels.php`~~ (see `FIX_C1_C2_C3.md`) |
 | ~~P2~~ **FIXED** | ~~Hardcoded test credentials in LoginPage~~ | ~~`LoginPage.tsx`~~ (see `FIX_C1_C2_C3.md`) |
 | ~~P3~~ **FIXED** | ~~Missing autocomplete attributes on password inputs~~ | ~~`LoginPage.tsx`, `RegisterPage.tsx`~~ (see `FIX_C1_C2_C3.md`) |
+| ~~P2~~ **FIXED** | ~~HUD wave uses getState() instead of reactive selector~~ | ~~`HUD.tsx`~~ (see `FIX_D1_D2.md`) |
+| ~~P3~~ **FIXED** | ~~Missing page title changes per route~~ | ~~`MenuPage.tsx`, `LoginPage.tsx`, `RegisterPage.tsx`, `ProfilePage.tsx`, `GameLayout.tsx`~~ (see `FIX_D1_D2.md`) |
