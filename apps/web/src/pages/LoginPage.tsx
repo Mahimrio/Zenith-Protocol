@@ -10,8 +10,8 @@ import { NeonButton } from '@ui/NeonButton';
 import { NeonGrid } from '../components/NeonGrid';
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('admin@gamehub.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -78,6 +78,7 @@ export const LoginPage: React.FC = () => {
             <label className="block text-xs font-mono text-neon-cyan uppercase mb-2 tracking-widest">Encryption Key</label>
             <input 
               type="password" 
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-black/40 border border-border-glass rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:border-neon-cyan transition-colors font-mono placeholder:text-text-muted/30"

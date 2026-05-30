@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 3 post-audit fixes.** ✅
+> **All 17 audit bugs fixed + 4 post-audit fixes.** ✅
 
 ---
 
@@ -549,6 +549,7 @@ Game Session → ScoreService::validateAndSave()
 | Private channel | `user.{userId}` → `achievement.unlocked` |
 | Frontend singleton | `useEcho()` hook — module-level instance, subscribe/unsubscribe helpers |
 | Frontend deps | pusher-js, laravel-echo |
+| Channel auth | `routes/channels.php` — `user.{userId}` private channel with user ID match callback |
 | Dev setup | `php artisan reverb:start` (port 8080) in separate terminal |
 
 ---
@@ -605,3 +606,6 @@ Game Session → ScoreService::validateAndSave()
 | ~~P1~~ **FIXED** | ~~Leaderboard cache key mismatch — key `leaderboard_{gameId}_{limit}` doesn't match forgot key `leaderboard_{gameId}`~~ | ~~`LeaderboardController.php`~~ (see `FIX_011_LeaderboardCacheKey.md`) |
 | ~~P2~~ **FIXED** | ~~Debug console.log in Runner GameCanvas~~ | ~~`GameCanvas.tsx`~~ (see `FIX_B1_B2.md`) |
 | ~~P2~~ **FIXED** | ~~Wrong VITE_API_URL in .env.example + missing VITE_REVERB_SCHEME~~ | ~~`.env.example`~~ (see `FIX_B1_B2.md`) |
+| ~~P1~~ **FIXED** | ~~Private channel user.{userId} has no auth callback — achievement toasts broken~~ | ~~`channels.php`~~ (see `FIX_C1_C2_C3.md`) |
+| ~~P2~~ **FIXED** | ~~Hardcoded test credentials in LoginPage~~ | ~~`LoginPage.tsx`~~ (see `FIX_C1_C2_C3.md`) |
+| ~~P3~~ **FIXED** | ~~Missing autocomplete attributes on password inputs~~ | ~~`LoginPage.tsx`, `RegisterPage.tsx`~~ (see `FIX_C1_C2_C3.md`) |

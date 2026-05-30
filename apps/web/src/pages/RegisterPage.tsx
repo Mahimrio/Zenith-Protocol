@@ -126,6 +126,7 @@ export const RegisterPage: React.FC = () => {
             <input
               id="register-password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={inputClasses}
@@ -143,6 +144,7 @@ export const RegisterPage: React.FC = () => {
             <input
               id="register-password-confirmation"
               type="password"
+              autoComplete="new-password"
               value={passwordConfirmation}
               onChange={(e) => setPasswordConfirmation(e.target.value)}
               className={inputClasses}
