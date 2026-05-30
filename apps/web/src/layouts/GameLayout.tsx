@@ -4,7 +4,7 @@
  * @description Full-screen layout for active game without navigation.
  * Shows orientation warning on mobile portrait for dojo-3d.
  */
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import type { GameResult } from '@sdk/types';
@@ -18,6 +18,12 @@ import { GameOverModal } from '../components/GameOverModal';
 import { PauseMenu } from '../components/PauseMenu';
 import { useScoreSubmit } from '../hooks/useScoreSubmit';
 
+const GAME_NAMES: Record<string, string> = {
+  'dojo-3d': 'Dojo Fighter',
+  'card-battler': 'Card Battler',
+  'cyber-runner': 'Cyber Runner',
+};
+
 export const GameLayout: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
@@ -27,16 +33,16 @@ export const GameLayout: React.FC = () => {
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [showEscHint, setShowEscHint] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const playCount = parseInt(localStorage.getItem('zenith-play-count') ?? '0', 10);
+    return playCount < 3;
+  });
+  const hintRef = useRef<HTMLDivElement>(null);
   const { submitScore } = useScoreSubmit();
 
-  const gameNames: Record<string, string> = {
-    'dojo-3d': 'Dojo Fighter',
-    'card-battler': 'Card Battler',
-    'cyber-runner': 'Cyber Runner',
-  }
-
   useEffect(() => {
-    document.title = `${gameNames[gameId ?? ''] ?? 'Game'} — Zenith Protocol`
+    document.title = `${GAME_NAMES[gameId ?? ''] ?? 'Game'} — Zenith Protocol`
   }, [gameId])
 
   useEffect(() => {
@@ -88,6 +94,28 @@ export const GameLayout: React.FC = () => {
     };
   }, [submitScore]);
 
+  useEffect(() => {
+    if (isMobile) return;
+
+    if (!showEscHint) return;
+
+    const playCount = parseInt(localStorage.getItem('zenith-play-count') ?? '0', 10);
+    localStorage.setItem('zenith-play-count', String(playCount + 1));
+
+    const timer = setTimeout(() => {
+      if (hintRef.current) {
+        gsap.to(hintRef.current, {
+          opacity: 0, duration: 1, ease: 'power2.in',
+          onComplete: () => setShowEscHint(false),
+        });
+      } else {
+        setShowEscHint(false);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [isMobile, showEscHint]);
+
   if (!gameId) {
     navigate('/');
     return null;
@@ -126,7 +154,7 @@ export const GameLayout: React.FC = () => {
 
   return (
       <div className="w-screen h-screen overflow-hidden bg-black relative">
-      <Suspense fallback={<GlobalLoadingScreen gameName={gameNames[gameId ?? '']} />}>
+      <Suspense fallback={<GlobalLoadingScreen gameName={GAME_NAMES[gameId ?? '']} />}>
         <div className={showOrientationWarning ? 'pointer-events-none' : ''}>
           <GameComponent />
         </div>
@@ -149,6 +177,19 @@ export const GameLayout: React.FC = () => {
           onRestart={handlePlayAgain}
           onMenu={handleMenu}
         />
+      )}
+
+      {/* Esc hint — fades out after 3s on first 3 plays */}
+      {showEscHint && (
+        <div
+          ref={hintRef}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20
+                     text-text-muted text-xs font-mono tracking-widest
+                     bg-glass backdrop-blur-md border border-glass
+                     rounded-lg px-4 py-2 pointer-events-none"
+        >
+          Press <kbd className="text-neon-cyan">Esc</kbd> to pause
+        </div>
       )}
 
       {showOrientationWarning && <OrientationOverlay />}

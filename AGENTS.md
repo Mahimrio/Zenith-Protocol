@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 5 post-audit fixes + 3 UI/UX improvements.** ✅
+> **All 17 audit bugs fixed + 5 post-audit fixes + 4 UI/UX improvements.** ✅
 
 ---
 
@@ -243,7 +243,7 @@ Zenith Protocol/
 | File | Purpose |
 |------|---------|
 | `layouts/MainLayout.tsx` | Persistent shell: Navbar + Outlet |
-| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module via pluginLoader. Renders `GameOverModal` on `GAME_OVER`, `PauseMenu` on `PAUSE_REQUESTED`, and orientation overlay with pointer-events blocking. |
+| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module via pluginLoader. Renders `GameOverModal` on `GAME_OVER`, `PauseMenu` on `PAUSE_REQUESTED`, orientation overlay with pointer-events blocking, and Esc hint for new players. |
 
 ### Lib / Worker
 
@@ -615,3 +615,4 @@ Game Session → ScoreService::validateAndSave()
 | ~~P2~~ **FIXED** | ~~Orientation overlay doesn't block touch pass-through to R3F~~ | ~~`GameLayout.tsx`~~ (see `FIX_UI_UX_2A_2B.md`) |
 | ~~P3~~ **FIXED** | ~~Loading screen doesn't show game name~~ | ~~`GlobalLoadingScreen.tsx`, `GameLayout.tsx`~~ (see `FIX_UI_UX_3A_3B.md`) |
 | ~~P3~~ **FIXED** | ~~No score submission success feedback~~ | ~~`GameLayout.tsx`, `GameOverModal.tsx`~~ (see `FIX_UI_UX_3A_3B.md`) |
+| ~~P2~~ **FIXED** | ~~No Escape-to-pause hint for new players~~ | ~~`GameLayout.tsx`~~ (see `FIX_EscHint.md`) |
