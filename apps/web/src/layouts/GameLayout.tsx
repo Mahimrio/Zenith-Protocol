@@ -118,9 +118,11 @@ export const GameLayout: React.FC = () => {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-black relative">
+      <div className="w-screen h-screen overflow-hidden bg-black relative">
       <Suspense fallback={<GlobalLoadingScreen />}>
-        <GameComponent />
+        <div className={showOrientationWarning ? 'pointer-events-none' : ''}>
+          <GameComponent />
+        </div>
       </Suspense>
 
       {/* Game Over Modal — shown when game ends */}
@@ -174,7 +176,7 @@ const OrientationOverlay: React.FC = () => {
   return (
     <div
       ref={overlayRef}
-      className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md pointer-events-auto"
     >
       <GlassCard className="p-8 flex flex-col items-center gap-4 max-w-xs text-center" glowColor="neon-cyan">
         <svg

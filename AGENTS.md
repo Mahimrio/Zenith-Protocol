@@ -3,7 +3,7 @@
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
 > **Last updated:** 2026-05-30
-> **All 17 audit bugs fixed + 5 post-audit fixes.** ✅
+> **All 17 audit bugs fixed + 5 post-audit fixes + 2 UI/UX improvements.** ✅
 
 ---
 
@@ -228,7 +228,7 @@ Zenith Protocol/
 | `components/ProtectedRoute.tsx` | Token hydration → fetchMe → loading → Outlet. requireAdmin prop ready |
 | `components/Leaderboard.tsx` | Game tab switcher (GSAP indicator), top-3 badges, live pulse, new-entry GSAP animation |
 | `components/VolumeControl.tsx` | Styled range slider, neon-cyan thumb, gradient fill, % badge |
-| `components/SettingsModal.tsx` | GSAP scale+opacity entrance, Audio (3 VolumeControls + mute toggle), Account section |
+| `components/SettingsModal.tsx` | GSAP scale+opacity entrance, Audio (3 VolumeControls + mute toggle), Account section, Escape-to-close |
 | `components/AchievementToast.tsx` | Fixed top-right z-50, GSAP back.out slide-in → 3s → slide-out, neon-amber glow |
 | `components/DailyChallengeBanner.tsx` | Horizontal banner, countdown timer (DOM ref), 3 ChallengeCards, GSAP slide-down |
 | `components/ChallengeCard.tsx` | GlassCard, colored left border per game, progress bar, GSAP "COMPLETED" stamp |
@@ -243,7 +243,7 @@ Zenith Protocol/
 | File | Purpose |
 |------|---------|
 | `layouts/MainLayout.tsx` | Persistent shell: Navbar + Outlet |
-| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module via pluginLoader. Renders `GameOverModal` on `GAME_OVER` and `PauseMenu` on `PAUSE_REQUESTED`. |
+| `layouts/GameLayout.tsx` | Full-screen game container, lazy-loads game module via pluginLoader. Renders `GameOverModal` on `GAME_OVER`, `PauseMenu` on `PAUSE_REQUESTED`, and orientation overlay with pointer-events blocking. |
 
 ### Lib / Worker
 
@@ -611,3 +611,5 @@ Game Session → ScoreService::validateAndSave()
 | ~~P3~~ **FIXED** | ~~Missing autocomplete attributes on password inputs~~ | ~~`LoginPage.tsx`, `RegisterPage.tsx`~~ (see `FIX_C1_C2_C3.md`) |
 | ~~P2~~ **FIXED** | ~~HUD wave uses getState() instead of reactive selector~~ | ~~`HUD.tsx`~~ (see `FIX_D1_D2.md`) |
 | ~~P3~~ **FIXED** | ~~Missing page title changes per route~~ | ~~`MenuPage.tsx`, `LoginPage.tsx`, `RegisterPage.tsx`, `ProfilePage.tsx`, `GameLayout.tsx`~~ (see `FIX_D1_D2.md`) |
+| ~~P2~~ **FIXED** | ~~SettingsModal lacks Escape-to-close keyboard shortcut~~ | ~~`SettingsModal.tsx`~~ (see `FIX_UI_UX_2A_2B.md`) |
+| ~~P2~~ **FIXED** | ~~Orientation overlay doesn't block touch pass-through to R3F~~ | ~~`GameLayout.tsx`~~ (see `FIX_UI_UX_2A_2B.md`) |
