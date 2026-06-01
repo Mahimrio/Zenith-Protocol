@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import { useGameStore } from '../store/gameStore';
 import { useAuth } from '../hooks/useAuth';
+import { useMusic } from '@sdk/hooks/useMusic';
 import { NeonGrid } from '../components/NeonGrid';
 import { GameGrid } from '../components/GameGrid';
 import { Leaderboard } from '../components/Leaderboard';
@@ -29,6 +30,7 @@ export const MenuPage: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const titleRef = useRef<HTMLHeadingElement>(null);
+  useMusic('/sounds/ui/menu-bgm.mp3');
 
   /* ── Rankings collapse state ────────────────────────────────────── */
   const [rankingsOpen, setRankingsOpen] = useState(false);

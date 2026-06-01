@@ -37,7 +37,7 @@ registerSW({
     });
   },
   onOfflineReady() {
-    console.log('PWA ready for offline use');
+    // PWA ready — handled silently
   },
 });
 
