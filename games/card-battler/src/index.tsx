@@ -5,6 +5,7 @@
 import React, { useEffect } from 'react';
 import { useCardStore } from './store/cardStore';
 import { useGameBridge } from '@sdk/useGameBridge';
+import { useMusic } from '@sdk/hooks/useMusic';
 import { GameBoard } from './components/GameBoard';
 import { PlayerHand } from './components/PlayerHand';
 import { TurnIndicator } from './components/TurnIndicator';
@@ -16,6 +17,7 @@ const CardBattlerGame: React.FC = () => {
     spectatorMode, toggleSpectatorMode, playerHand, playerMana, playCard, endTurn
   } = useCardStore();
   const { emitGameOver, requestPause } = useGameBridge('card-battler');
+  useMusic('/sounds/card/card-theme.mp3');
 
   useEffect(() => {
     startGame();
