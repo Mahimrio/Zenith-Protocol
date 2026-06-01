@@ -67,7 +67,7 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@games': path.resolve(__dirname, '../../games'),
     },
-    dedupe: ['react', 'react-dom', 'three', 'gsap', 'zustand'],
+    dedupe: ['react', 'react-dom', 'three', 'gsap', 'zustand', '@react-three/fiber', '@react-three/drei', '@react-three/rapier', '@react-three/postprocessing'],
     preserveSymlinks: false,
   },
   build: {
