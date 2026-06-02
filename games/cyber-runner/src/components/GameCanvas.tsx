@@ -377,7 +377,6 @@ export const GameCanvas: React.FC = () => {
 
     // 3. JETPACK DETAIL (behind torso, left side)
     ctx.save();
-    ctx.fillStyle = '#1a0a2a';
     ctx.strokeStyle = '#8b5cf6';
     ctx.lineWidth = 1.5;
     ctx.shadowColor = '#8b5cf6';
@@ -385,13 +384,11 @@ export const GameCanvas: React.FC = () => {
     if (ctx.roundRect) {
       ctx.beginPath();
       ctx.roundRect(playerX - 2, baseY + 28, 8, 20, 2);
-      ctx.fill();
       ctx.stroke();
     } else {
-      ctx.fillRect(playerX - 2, baseY + 28, 8, 20);
       ctx.strokeRect(playerX - 2, baseY + 28, 8, 20);
     }
-    
+
     ctx.fillStyle = '#f59e0b';
     ctx.shadowColor = '#f59e0b';
     ctx.shadowBlur = 6;
@@ -401,20 +398,18 @@ export const GameCanvas: React.FC = () => {
 
     // 4. TORSO
     ctx.save();
-    ctx.fillStyle = '#0a0a1a';
     ctx.strokeStyle = '#00f5ff';
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.shadowColor = '#00f5ff';
     ctx.shadowBlur = 6;
-    
+
     ctx.beginPath();
     ctx.moveTo(playerX + 6, baseY + 26);
     ctx.lineTo(playerX + 28, baseY + 26);
     ctx.lineTo(playerX + 24, baseY + 54);
     ctx.lineTo(playerX + 10, baseY + 54);
     ctx.closePath();
-    ctx.fill();
     ctx.stroke();
 
     // Chest armor lines
@@ -427,7 +422,7 @@ export const GameCanvas: React.FC = () => {
     ctx.moveTo(playerX + 26, baseY + 32);
     ctx.lineTo(playerX + 10, baseY + 48);
     ctx.stroke();
-    
+
     // Glowing core in chest
     ctx.fillStyle = '#00f5ff';
     ctx.shadowColor = '#00f5ff';
@@ -467,7 +462,6 @@ export const GameCanvas: React.FC = () => {
       ctx.translate(-(headX + headW/2), -(headY + headH/2));
     }
     
-    ctx.fillStyle = '#0a0a1a';
     ctx.strokeStyle = '#00f5ff';
     ctx.lineWidth = 2;
     ctx.shadowColor = '#00f5ff';
@@ -479,7 +473,6 @@ export const GameCanvas: React.FC = () => {
     } else {
       ctx.rect(headX, headY, headW, headH);
     }
-    ctx.fill();
     ctx.stroke();
 
     // Visor
