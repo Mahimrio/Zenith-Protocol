@@ -8,236 +8,382 @@ import { usePhysics } from '../hooks/usePhysics';
 import { useParallax } from '../hooks/useParallax';
 import { drawSky } from '../utils/backgroundLayers';
 import { useObstacles } from '../hooks/useObstacles';
-import { usePowerups } from '../hooks/usePowerups';
-import { checkPlayerObstacleCollision } from '../utils/collision';
 import { useRunnerStore, RUNNER_SPEED } from '../store/runnerStore';
-import { ObstacleType, type Obstacle, PowerupType, type Powerup } from '../utils/obstacleFactory';
+import { ObstacleType, type Obstacle } from '../utils/obstacleFactory';
+import { checkPlayerObstacleCollision } from '../utils/collision';
 import { playSfx } from '@sdk/store/soundStore';
 import { useInputHandler } from '../hooks/useInputHandler';
 import { TouchControls } from './TouchControls';
 
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { state: _pState, update: pUpdate, jump, slide } = usePhysics();
+  const { state: _pState, update: pUpdate, jump, slide, stopSlide } = usePhysics();
   const { updateAndDraw } = useParallax();
   const { update: obsUpdate, reset: obsReset } = useObstacles();
-  const { update: pwrUpdate, reset: pwrReset } = usePowerups();
   const incrementDistance = useRunnerStore(s => s.incrementDistance);
   const triggerGameOver = useRunnerStore(s => s.triggerGameOver);
   const gameStatus = useRunnerStore(s => s.gameStatus);
-  const activatePowerup = useRunnerStore(s => s.activatePowerup);
-  const deactivatePowerup = useRunnerStore(s => s.deactivatePowerup);
-  
+
   const gameSpeedRef = useRef<number>(RUNNER_SPEED.INITIAL_SPEED);
   const timeRef = useRef(0);
-  const trailRef = useRef<{x: number, y: number, isSliding: boolean}[]>([]);
+  const spriteSheetRef = useRef<HTMLImageElement | null>(null);
 
-  useInputHandler(jump, slide, gameStatus === 'PLAYING');
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/images/cyber-runner/spritesheet.png';
+    spriteSheetRef.current = img;
+  }, []);
+
+  useInputHandler(jump, slide, stopSlide, gameStatus === 'PLAYING');
+
+  const drawToxicPlant = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    baseY: number,
+    w: number,
+    h: number,
+    t: number
+  ) => {
+    const stemCount = 3;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    for (let i = 0; i < stemCount; i++) {
+      const offsetX = (i - 1) * (w / 4);
+      const sway = Math.sin(t * 1.5 + i * 1.2) * 4;
+      const stemH = h * (0.85 + (i % 2) * 0.15);
+      const tipX = cx + offsetX + sway;
+      const tipY = baseY - stemH;
+      const ctrlX = cx + offsetX + sway * 1.6;
+      const ctrlY = baseY - stemH * 0.55;
+
+      ctx.strokeStyle = '#0a0a0f';
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(cx + offsetX, baseY);
+      ctx.quadraticCurveTo(ctrlX, ctrlY, tipX, tipY);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#1d6e6e';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(cx + offsetX, baseY);
+      ctx.quadraticCurveTo(ctrlX, ctrlY, tipX, tipY);
+      ctx.stroke();
+
+      ctx.shadowColor = '#10ff80';
+      ctx.shadowBlur = 6;
+      ctx.strokeStyle = '#10ff80';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx + offsetX, baseY - stemH * 0.15);
+      ctx.quadraticCurveTo(ctrlX, ctrlY + stemH * 0.1, tipX, tipY + 4);
+      ctx.stroke();
+
+      for (let v = 0; v < 4; v++) {
+        const vt = 0.2 + v * 0.2;
+        const px = (1 - vt) * (1 - vt) * (cx + offsetX) + 2 * (1 - vt) * vt * ctrlX + vt * vt * tipX;
+        const py = (1 - vt) * (1 - vt) * baseY + 2 * (1 - vt) * vt * ctrlY + vt * vt * tipY;
+        ctx.fillStyle = '#10ff80';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(px + (v % 2 === 0 ? 3 : -3), py - 4, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.shadowColor = '#ff5fb0';
+    ctx.shadowBlur = 10;
+    for (let i = 0; i < stemCount; i++) {
+      const offsetX = (i - 1) * (w / 4);
+      const sway = Math.sin(t * 1.5 + i * 1.2) * 4;
+      const tipX = cx + offsetX + sway;
+      const tipY = baseY - h * (0.85 + (i % 2) * 0.15);
+
+      if (i === 0 || i === 2) {
+        const fx = tipX + Math.cos(t * 0.8 + i) * 2;
+        const fy = tipY - 4;
+        ctx.fillStyle = '#0a0a0f';
+        ctx.beginPath();
+        for (let p = 0; p < 5; p++) {
+          const a = (Math.PI * 2 / 5) * p - Math.PI / 2;
+          const r = p === 0 ? 5 : 4;
+          ctx.lineTo(fx + Math.cos(a) * r, fy + Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#ffd1e8';
+        ctx.beginPath();
+        for (let p = 0; p < 5; p++) {
+          const a = (Math.PI * 2 / 5) * p - Math.PI / 2;
+          const r = p === 0 ? 3.5 : 2.5;
+          ctx.lineTo(fx + Math.cos(a) * r, fy + Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#ff5fb0';
+        ctx.beginPath();
+        ctx.arc(fx, fy, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  };
+
+  const drawSpikeCube = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    size: number,
+    t: number
+  ) => {
+    const bob = Math.sin(t * 3) * 3;
+    const rot = t * 0.6;
+    const half = size / 2;
+    const spikeLen = size * 0.28;
+
+    ctx.save();
+    ctx.translate(cx, cy + bob);
+    ctx.rotate(rot);
+
+    const faceOffset = size * 0.22;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.beginPath();
+    ctx.moveTo(-half, -half + faceOffset);
+    ctx.lineTo(0, -half);
+    ctx.lineTo(half, -half + faceOffset);
+    ctx.lineTo(half, half);
+    ctx.lineTo(-half, half);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.moveTo(-half + 2, -half + faceOffset + 2);
+    ctx.lineTo(0, -half + 2);
+    ctx.lineTo(half - 2, -half + faceOffset + 2);
+    ctx.lineTo(half - 2, half - 2);
+    ctx.lineTo(-half + 2, half - 2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#06b6d4';
+    ctx.shadowColor = '#06b6d4';
+    ctx.shadowBlur = 4;
+    ctx.lineWidth = 1;
+    for (let r = 0; r < 3; r++) {
+      const yy = -half + faceOffset + 6 + r * 4;
+      ctx.beginPath();
+      ctx.moveTo(-half + 4, yy);
+      ctx.lineTo(half - 4, yy);
+      ctx.stroke();
+    }
+
+    ctx.shadowBlur = 0;
+    ctx.rotate(-rot);
+
+    const spikePositions: [number, number, number][] = [
+      [0, -half - spikeLen * 0.4, 0],
+      [half + spikeLen * 0.4, 0, Math.PI / 2],
+      [-half - spikeLen * 0.4, 0, -Math.PI / 2],
+      [0, half + spikeLen * 0.4, Math.PI],
+      [half * 0.7, -half * 0.7 - spikeLen * 0.3, Math.PI / 4],
+      [-half * 0.7, -half * 0.7 - spikeLen * 0.3, -Math.PI / 4],
+      [half * 0.7, half * 0.7 + spikeLen * 0.3, Math.PI * 0.75],
+      [-half * 0.7, half * 0.7 + spikeLen * 0.3, -Math.PI * 0.75],
+    ];
+
+    spikePositions.forEach(([sx, sy, angle]) => {
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate(angle);
+      ctx.shadowColor = '#00f5ff';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#0a0a0f';
+      ctx.beginPath();
+      ctx.moveTo(0, -spikeLen);
+      ctx.lineTo(4, 0);
+      ctx.lineTo(-4, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#67e8f9';
+      ctx.beginPath();
+      ctx.moveTo(0, -spikeLen + 1.5);
+      ctx.lineTo(2.5, -1);
+      ctx.lineTo(-2.5, -1);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  };
+
+  const drawCrystalCluster = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    baseY: number,
+    w: number,
+    h: number,
+    _t: number
+  ) => {
+    const crystals: { dx: number; dy: number; angle: number; size: number; color: string; glow: string }[] = [
+      { dx: -w * 0.32, dy: -h * 0.55, angle: -0.15, size: h * 0.9, color: '#10ff80', glow: '#10ff80' },
+      { dx: -w * 0.05, dy: -h * 0.85, angle: 0.08, size: h * 1.15, color: '#00f5ff', glow: '#00f5ff' },
+      { dx: w * 0.18, dy: -h * 0.7, angle: -0.05, size: h * 1.0, color: '#ff3df0', glow: '#ff3df0' },
+      { dx: w * 0.32, dy: -h * 0.4, angle: 0.18, size: h * 0.75, color: '#a78bfa', glow: '#a78bfa' },
+      { dx: -w * 0.22, dy: -h * 0.25, angle: 0.22, size: h * 0.6, color: '#ff3df0', glow: '#ff3df0' },
+    ];
+
+    const glitchX = (Math.random() < 0.04 ? (Math.random() - 0.5) * 3 : 0);
+
+    ctx.save();
+    ctx.translate(glitchX, 0);
+    ctx.lineJoin = 'round';
+
+    crystals.forEach((c) => {
+      const px = cx + c.dx;
+      const py = baseY + c.dy;
+      const s = c.size;
+
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(c.angle);
+
+      ctx.shadowColor = c.glow;
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#0a0a0f';
+      ctx.beginPath();
+      ctx.moveTo(0, -s / 2);
+      ctx.lineTo(s * 0.32, -s * 0.1);
+      ctx.lineTo(s * 0.22, s / 2);
+      ctx.lineTo(-s * 0.22, s / 2);
+      ctx.lineTo(-s * 0.32, -s * 0.1);
+      ctx.closePath();
+      ctx.fill();
+
+      const grad = ctx.createLinearGradient(0, -s / 2, 0, s / 2);
+      grad.addColorStop(0, c.color);
+      grad.addColorStop(1, '#0a0a0f');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(0, -s / 2 + 2);
+      ctx.lineTo(s * 0.28, -s * 0.1);
+      ctx.lineTo(s * 0.18, s / 2 - 1);
+      ctx.lineTo(-s * 0.18, s / 2 - 1);
+      ctx.lineTo(-s * 0.28, -s * 0.1);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#0a0a0f';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -s / 2);
+      ctx.lineTo(0, s / 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = c.color;
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.1, -s * 0.3);
+      ctx.lineTo(-s * 0.05, s * 0.3);
+      ctx.stroke();
+
+      ctx.restore();
+    });
+
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  };
+
+  const drawLaserField = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    baseY: number,
+    w: number,
+    h: number,
+    t: number
+  ) => {
+    ctx.save();
+
+    const anchorTopY = baseY - h;
+    const anchorBotY = baseY;
+    const beamCount = 6;
+    const pulse = 0.7 + Math.sin(t * 4) * 0.3;
+
+    for (let layer = 0; layer < 3; layer++) {
+      const layerAlpha = 0.25 + (2 - layer) * 0.15;
+      ctx.globalAlpha = layerAlpha;
+      ctx.strokeStyle = '#00f5ff';
+      ctx.shadowColor = '#00f5ff';
+      ctx.shadowBlur = layer === 0 ? 18 : 6;
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < beamCount; i++) {
+        const seed = (i + 1) * 1.7;
+        const topAnchorX = cx + (i - beamCount / 2) * 4;
+        const botAnchorX = cx + Math.sin(t * 1.2 + seed) * (w * 0.45);
+        const ctrlX = cx + Math.cos(t * 0.7 + seed) * (w * 0.55);
+        const ctrlY = (anchorTopY + anchorBotY) / 2 + Math.sin(t * 2 + seed) * 4;
+
+        ctx.lineWidth = layer === 0 ? 4.5 : (layer === 1 ? 2.5 : 1.2);
+        ctx.beginPath();
+        ctx.moveTo(topAnchorX + (i - beamCount / 2) * 2, anchorTopY);
+        ctx.quadraticCurveTo(ctrlX, ctrlY, botAnchorX, anchorBotY);
+        ctx.stroke();
+      }
+    }
+
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 12 * pulse;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.beginPath();
+    ctx.arc(cx, anchorTopY, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#67e8f9';
+    ctx.beginPath();
+    ctx.arc(cx, anchorTopY, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#0a0a0f';
+    ctx.beginPath();
+    ctx.arc(cx, anchorBotY, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#67e8f9';
+    ctx.beginPath();
+    ctx.arc(cx, anchorBotY, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  };
 
   const drawObstacles = (
     ctx: CanvasRenderingContext2D,
     groundLevel: number,
     totalTime: number,
-    obstacles: Obstacle[],
-    playerX: number
+    obstacles: Obstacle[]
   ) => {
-    let showBarrierWarning = false;
+    obstacles.forEach(obs => {
+      const topY = groundLevel - obs.y - obs.height;
+      const bottomY = groundLevel - obs.y;
+      const cx = obs.x + obs.width / 2;
+      const cy = topY + obs.height / 2;
 
-    obstacles.forEach((obstacle) => {
-      if ((obstacle as any).broken) return;
-
-      if (obstacle.type === ObstacleType.BARRIER) {
-        const distanceToPlayer = obstacle.x - playerX;
-        if (distanceToPlayer > 0 && distanceToPlayer <= 200) {
-          showBarrierWarning = true;
-        }
-
-        const x = obstacle.x;
-        const y = groundLevel - obstacle.y - obstacle.height;
-        ctx.save();
-        ctx.fillStyle = '#1a0a1a';
-        ctx.strokeStyle = '#ff3366';
-        ctx.shadowColor = '#ff3366';
-        ctx.shadowBlur = 14;
-        ctx.lineWidth = 2;
-        ctx.fillRect(x, y, obstacle.width, obstacle.height);
-        ctx.strokeRect(x, y, obstacle.width, obstacle.height);
-
-        ctx.strokeStyle = 'rgba(255,51,102,0.4)';
-        ctx.lineWidth = 1.5;
-        for (let i = 1; i <= 3; i++) {
-          ctx.beginPath();
-          ctx.moveTo(x + 2, y + (obstacle.height / 4) * i);
-          ctx.lineTo(x + obstacle.width - 2, y + (obstacle.height / 4) * i);
-          ctx.stroke();
-        }
-
-        ctx.fillStyle = '#ff3366';
-        ctx.beginPath();
-        ctx.moveTo(x + obstacle.width / 2, y - 14);
-        ctx.lineTo(x + obstacle.width, y);
-        ctx.lineTo(x, y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-        return;
+      if (obs.type === ObstacleType.TOXIC_PLANT) {
+        drawToxicPlant(ctx, cx, bottomY, obs.width, obs.height, totalTime + obs.phase);
+      } else if (obs.type === ObstacleType.SPIKE_CUBE) {
+        drawSpikeCube(ctx, cx, cy, obs.width, totalTime + obs.phase);
+      } else if (obs.type === ObstacleType.CRYSTAL_CLUSTER) {
+        drawCrystalCluster(ctx, cx, bottomY, obs.width, obs.height, totalTime + obs.phase);
+      } else if (obs.type === ObstacleType.LASER_FIELD) {
+        drawLaserField(ctx, cx, bottomY, obs.width, obs.height, totalTime + obs.phase);
       }
-
-      if (obstacle.type === ObstacleType.LOW_BLOCK) {
-        const x = obstacle.x;
-        const slabHeight = obstacle.height;
-        const slabY = groundLevel - obstacle.y - slabHeight;
-        ctx.save();
-        ctx.fillStyle = '#0a1a2a';
-        ctx.strokeStyle = '#00aaff';
-        ctx.shadowColor = '#00aaff';
-        ctx.shadowBlur = 18;
-        ctx.lineWidth = 2;
-        ctx.fillRect(x, slabY, obstacle.width, slabHeight);
-        ctx.strokeRect(x, slabY, obstacle.width, slabHeight);
-
-        ctx.strokeStyle = 'rgba(0,170,255,0.8)';
-        ctx.lineWidth = 1.5;
-        for (let s = 0; s < 3; s++) {
-          ctx.beginPath();
-          ctx.moveTo(x + 8 + s * 16, slabY);
-          ctx.lineTo(x + 12 + s * 16 + Math.random() * 6 - 3, slabY - 8 - Math.random() * 6);
-          ctx.lineTo(x + 16 + s * 16 + Math.random() * 4 - 2, slabY);
-          ctx.stroke();
-        }
-
-        ctx.fillStyle = '#00aaff';
-        ctx.beginPath();
-        ctx.moveTo(x + obstacle.width / 2, slabY + 8);
-        ctx.lineTo(x + obstacle.width / 2 + 12, slabY - 4);
-        ctx.lineTo(x + obstacle.width / 2 - 12, slabY - 4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-        return;
-      }
-
-      if (obstacle.type === ObstacleType.HOVER_MINE) {
-        const mineY = groundLevel - obstacle.y - obstacle.height;
-        obstacle.rotation += 0.03;
-
-        ctx.save();
-        ctx.translate(obstacle.x + obstacle.width / 2, mineY + obstacle.height / 2);
-        ctx.rotate(obstacle.rotation);
-        const scale = Math.sin(totalTime * 4) * 0.08 + 1;
-        ctx.scale(scale, scale);
-        ctx.shadowColor = '#ffcc00';
-        ctx.shadowBlur = 22;
-        ctx.fillStyle = '#1a1a0a';
-        ctx.strokeStyle = '#ffcc00';
-        ctx.lineWidth = 2;
-
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = (Math.PI / 3) * i;
-          const r = 16;
-          if (i === 0) {
-            ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
-          } else {
-            ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
-          }
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        for (let i = 0; i < 6; i++) {
-          const a = (Math.PI / 3) * i + Math.PI / 6;
-          ctx.beginPath();
-          ctx.moveTo(Math.cos(a) * 16, Math.sin(a) * 16);
-          ctx.lineTo(Math.cos(a) * 24, Math.sin(a) * 24);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-    });
-
-    if (showBarrierWarning) {
-      const pulse = 0.5 + Math.sin(totalTime * 8) * 0.5;
-      ctx.save();
-      ctx.globalAlpha = 0.35 + pulse * 0.65;
-      ctx.fillStyle = '#ff3366';
-      ctx.shadowColor = '#ff3366';
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.moveTo(16, 90);
-      ctx.lineTo(32, 80);
-      ctx.lineTo(32, 100);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
-  };
-
-  const drawPowerups = (ctx: CanvasRenderingContext2D, totalTime: number, powerups: Powerup[]) => {
-    powerups.forEach(p => {
-      const py = p.y + Math.sin(totalTime * 3) * 4;
-      ctx.save();
-      ctx.translate(p.x + p.width / 2, py + p.height / 2);
-      ctx.rotate(totalTime * 0.8);
-      
-      ctx.shadowBlur = 16;
-      if (p.type === PowerupType.SHIELD) {
-        ctx.strokeStyle = '#00f5ff';
-        ctx.shadowColor = '#00f5ff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = (Math.PI / 3) * i;
-          ctx.lineTo(Math.cos(a) * 10, Math.sin(a) * 10);
-        }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fillStyle = '#00f5ff';
-        ctx.beginPath();
-        ctx.moveTo(0, -4); ctx.lineTo(4, -4); ctx.lineTo(4, 2);
-        ctx.lineTo(0, 6); ctx.lineTo(-4, 2); ctx.lineTo(-4, -4);
-        ctx.fill();
-      } else if (p.type === PowerupType.GHOST) {
-        ctx.strokeStyle = '#8b5cf6';
-        ctx.shadowColor = '#8b5cf6';
-        ctx.fillStyle = 'rgba(139, 92, 246, 0.4)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, -2, 8, Math.PI, 0);
-        ctx.lineTo(8, 8); ctx.lineTo(3, 4); ctx.lineTo(0, 8);
-        ctx.lineTo(-3, 4); ctx.lineTo(-8, 8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      } else if (p.type === PowerupType.MAGNET) {
-        ctx.strokeStyle = '#f59e0b';
-        ctx.shadowColor = '#f59e0b';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(0, -2, 6, Math.PI, 0, true);
-        ctx.lineTo(6, 6);
-        ctx.moveTo(-6, -2);
-        ctx.lineTo(-6, 6);
-        ctx.stroke();
-      } else if (p.type === PowerupType.BOOST) {
-        ctx.fillStyle = '#10b981';
-        ctx.shadowColor = '#10b981';
-        ctx.beginPath();
-        ctx.moveTo(-2, -8); ctx.lineTo(6, -2); ctx.lineTo(0, 0);
-        ctx.lineTo(4, 8); ctx.lineTo(-6, 2); ctx.lineTo(0, 0);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = ctx.shadowColor;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(0, 0, 16, 0, Math.PI * 2);
-      ctx.stroke();
-      
-      ctx.restore();
     });
   };
 
@@ -262,358 +408,87 @@ export const GameCanvas: React.FC = () => {
     const groundLevel = canvas.height - 40;
     const player = pUpdate(deltaTime, groundLevel);
     const currentObstacles = obsUpdate(gameSpeedRef.current, deltaTime, canvas.width);
-    const currentPowerups = pwrUpdate(gameSpeedRef.current, deltaTime, canvas.width, groundLevel);
 
-    const storeState = useRunnerStore.getState();
-    const { activePowerup: curPowerup, powerupExpiresAt: curExpiry, shieldActive: curShield, ghostActive: curGhost } = storeState;
+    const hitboxW = 32;
+    const hitboxH = player.isSliding ? 36 : 72;
+    const pHitbox = {
+      x: player.x,
+      y: player.y - hitboxH,
+      w: hitboxW,
+      h: hitboxH
+    };
 
-    if (curPowerup && Date.now() > curExpiry) {
-      deactivatePowerup();
+    let collided = false;
+    for (const obs of currentObstacles) {
+      const oHitbox = {
+        x: obs.x,
+        y: groundLevel - obs.y - obs.height,
+        w: obs.width,
+        h: obs.height
+      };
+      if (checkPlayerObstacleCollision(pHitbox, oHitbox, player.isSliding)) {
+        collided = true;
+        break;
+      }
+    }
+
+    if (collided) {
+      playSfx('/sounds/runner/jump.mp3');
+      triggerGameOver();
+      stop();
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawSky(ctx, canvas.width, canvas.height);
     updateAndDraw(ctx, gameSpeedRef.current, deltaTime, totalTime, canvas.width, canvas.height);
-    
-    drawPowerups(ctx, totalTime, currentPowerups);
-    drawObstacles(ctx, groundLevel, totalTime, currentObstacles, player.x);
+    drawObstacles(ctx, groundLevel, totalTime, currentObstacles);
 
-    const hitboxW = 32;
-    const hitboxH = player.isSliding ? 36 : 72;
-    const visualScale = 1.7;
-    const pWidth = hitboxW;
-    const pHeight = hitboxH;
-    const drawY = player.y - pHeight;
-    const baseY = player.y - 72;
-    const playerX = player.x;
+    const SPRITE_COLS = 5;
+    const SPRITE_ROWS = 3;
+    const DISPLAY_H = 130;
+    const sprite = spriteSheetRef.current;
+    const spriteReady = sprite && sprite.complete && sprite.naturalWidth > 0;
 
-    const visualCx = playerX + hitboxW / 2;
-    const visualCy = player.y - hitboxH / 2;
-    ctx.save();
-    ctx.translate(visualCx, visualCy);
-    ctx.scale(visualScale, visualScale);
-    ctx.translate(-visualCx, -visualCy);
+    if (spriteReady) {
+      const cellW = sprite.naturalWidth / SPRITE_COLS;
+      const cellH = sprite.naturalHeight / SPRITE_ROWS;
+      const spriteW = DISPLAY_H * (cellW / cellH);
+      const spriteCx = player.x + 16;
+      const spriteTop = player.y - DISPLAY_H;
 
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 245, 255, 0.18)';
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 18;
-    ctx.beginPath();
-    ctx.ellipse(visualCx, player.y - 2, hitboxW * 0.8, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+      let row = 0;
+      let col = 0;
 
-    trailRef.current.unshift({ x: player.x, y: drawY, isSliding: player.isSliding });
-    if (trailRef.current.length > 10) trailRef.current.pop();
-
-    trailRef.current.forEach((t, i) => {
-      ctx.fillStyle = `rgba(0, 245, 255, ${0.3 - (i * 0.03)})`;
-      ctx.fillRect(t.x, t.y, hitboxW, t.isSliding ? 36 : 72);
-    });
-
-    ctx.save();
-    if (player.isSliding) {
-      ctx.translate(player.x, player.y);
-      ctx.scale(1, 0.5);
-      ctx.translate(-player.x, -player.y);
-    }
-
-    if (curGhost) {
-      ctx.globalAlpha = 0.4 + (Math.sin(totalTime * 20) * 0.5 + 0.5) * 0.6;
-    }
-
-    // 1. LEFT ARM (Draw behind body)
-    ctx.save();
-    ctx.strokeStyle = '#00f5ff';
-    ctx.lineWidth = 3.5;
-    ctx.lineCap = 'round';
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 8;
-    
-    const leftShoulderX = playerX + 12;
-    const shoulderY = baseY + 30;
-    const armLength = 16;
-    
-    let leftArmAngle = player.isSliding 
-      ? Math.PI / 2.5 
-      : (-20 + Math.sin(totalTime * 10 + Math.PI) * 35) * (Math.PI / 180);
-      
-    ctx.beginPath();
-    ctx.moveTo(leftShoulderX, shoulderY);
-    ctx.lineTo(leftShoulderX + Math.sin(leftArmAngle) * armLength, shoulderY + Math.cos(leftArmAngle) * armLength);
-    ctx.stroke();
-    ctx.restore();
-
-    // 2. LEGS (Draw behind body)
-    ctx.save();
-    ctx.strokeStyle = '#00f5ff';
-    ctx.lineWidth = 3.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    if (player.isSliding) {
-      // Horizontal leg stubs
-      ctx.moveTo(playerX + 12, baseY + 54);
-      ctx.lineTo(playerX - 4, baseY + 54);
-      ctx.moveTo(playerX + 24, baseY + 54);
-      ctx.lineTo(playerX + 42, baseY + 54);
-      ctx.stroke();
-    } else {
-      // Animated vertical legs
-      const legSwing = Math.sin(totalTime * 10);
-      // Left leg
-      ctx.moveTo(playerX + 14, baseY + 54);
-      ctx.lineTo(playerX + 14 + legSwing * 10, baseY + 64);
-      ctx.lineTo(playerX + 8 + legSwing * 16, baseY + 72);
-      // Right leg
-      ctx.moveTo(playerX + 22, baseY + 54);
-      ctx.lineTo(playerX + 22 - legSwing * 10, baseY + 64);
-      ctx.lineTo(playerX + 28 - legSwing * 16, baseY + 72);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    // 3. JETPACK DETAIL (behind torso, left side)
-    ctx.save();
-    ctx.fillStyle = '#1a0a2a';
-    ctx.strokeStyle = '#8b5cf6';
-    ctx.lineWidth = 1.5;
-    ctx.shadowColor = '#8b5cf6';
-    ctx.shadowBlur = 8;
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(playerX - 2, baseY + 28, 8, 20, 2);
-      ctx.fill();
-      ctx.stroke();
-    } else {
-      ctx.fillRect(playerX - 2, baseY + 28, 8, 20);
-      ctx.strokeRect(playerX - 2, baseY + 28, 8, 20);
-    }
-    
-    ctx.fillStyle = '#f59e0b';
-    ctx.shadowColor = '#f59e0b';
-    ctx.shadowBlur = 6;
-    ctx.fillRect(playerX - 1, baseY + 48, 2, 4);
-    ctx.fillRect(playerX + 3, baseY + 48, 2, 4);
-    ctx.restore();
-
-    // 4. TORSO
-    ctx.save();
-    ctx.fillStyle = '#0a0a1a';
-    ctx.strokeStyle = '#00f5ff';
-    ctx.lineWidth = 2;
-    ctx.lineJoin = 'round';
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 6;
-    
-    ctx.beginPath();
-    ctx.moveTo(playerX + 6, baseY + 26);
-    ctx.lineTo(playerX + 28, baseY + 26);
-    ctx.lineTo(playerX + 24, baseY + 54);
-    ctx.lineTo(playerX + 10, baseY + 54);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // Chest armor lines
-    ctx.strokeStyle = 'rgba(0, 245, 255, 0.4)';
-    ctx.shadowBlur = 0;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(playerX + 8, baseY + 32);
-    ctx.lineTo(playerX + 24, baseY + 48);
-    ctx.moveTo(playerX + 26, baseY + 32);
-    ctx.lineTo(playerX + 10, baseY + 48);
-    ctx.stroke();
-    
-    // Glowing core in chest
-    ctx.fillStyle = '#00f5ff';
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 12;
-    ctx.fillRect(playerX + 15, baseY + 36, 4, 8);
-    ctx.restore();
-
-    // 5. RIGHT ARM (Draw over body)
-    ctx.save();
-    ctx.strokeStyle = '#00f5ff';
-    ctx.lineWidth = 3.5;
-    ctx.lineCap = 'round';
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 8;
-    
-    const rightShoulderX = playerX + 22;
-    let rightArmAngle = player.isSliding 
-      ? Math.PI / 2.5 
-      : (-20 + Math.sin(totalTime * 10) * 35) * (Math.PI / 180);
-    
-    ctx.beginPath();
-    ctx.moveTo(rightShoulderX, shoulderY);
-    ctx.lineTo(rightShoulderX + Math.sin(rightArmAngle) * armLength, shoulderY + Math.cos(rightArmAngle) * armLength);
-    ctx.stroke();
-    ctx.restore();
-
-    // 6. HEAD
-    ctx.save();
-    const headX = playerX + 6;
-    const headY = baseY + 8;
-    const headW = 20;
-    const headH = 16;
-
-    if (player.isSliding) {
-      ctx.translate(headX + headW/2, headY + headH/2);
-      ctx.rotate(Math.PI / 6);
-      ctx.translate(-(headX + headW/2), -(headY + headH/2));
-    }
-    
-    ctx.fillStyle = '#0a0a1a';
-    ctx.strokeStyle = '#00f5ff';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 8;
-
-    ctx.beginPath();
-    if (ctx.roundRect) {
-      ctx.roundRect(headX, headY, headW, headH, 4);
-    } else {
-      ctx.rect(headX, headY, headW, headH);
-    }
-    ctx.fill();
-    ctx.stroke();
-
-    // Visor
-    ctx.fillStyle = '#00f5ff';
-    ctx.shadowBlur = 12;
-    ctx.fillRect(playerX + 10, baseY + 14, 14, 4);
-    ctx.restore();
-    
-    ctx.restore(); // Restore sliding scale
-
-    if (curGhost) {
-      ctx.globalAlpha = 1.0;
-    }
-
-    if (curShield) {
-      ctx.save();
-      ctx.strokeStyle = '#00f5ff';
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.4 + Math.sin(totalTime * 6) * 0.15;
-      ctx.shadowColor = '#00f5ff';
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      for(let i=0; i<6; i++) {
-        const a = (Math.PI / 3) * i;
-        const r = 45;
-        const hx = playerX + 16 + Math.cos(a)*r;
-        const hy = baseY + 36 + Math.sin(a)*r;
-        if(i===0) ctx.moveTo(hx, hy);
-        else ctx.lineTo(hx, hy);
+      if (player.isSliding) {
+        row = 2;
+        col = Math.floor((totalTime * 2) % SPRITE_COLS);
+      } else if (!player.isGrounded) {
+        row = 1;
+        col = 2;
+      } else {
+        row = 0;
+        col = Math.floor((totalTime * 2.5) % SPRITE_COLS);
       }
-      ctx.closePath();
-      ctx.stroke();
-      ctx.restore();
-    }
 
-    if (curPowerup === PowerupType.MAGNET) {
-      ctx.save();
-      ctx.fillStyle = '#f59e0b';
-      ctx.shadowColor = '#f59e0b';
-      ctx.shadowBlur = 8;
-      const orbitSpeed = totalTime * 4;
-      for(let i=0; i<4; i++) {
-        const a = orbitSpeed + (Math.PI / 2) * i;
-        const r = 30;
-        const px = playerX + 16 + Math.cos(a)*r;
-        const py = baseY + 36 + Math.sin(a)*r;
-        ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI*2);
-        ctx.fill();
+      const sx = col * cellW;
+      const sy = row * cellH;
+      const dx = spriteCx - spriteW / 2;
+      let dy = spriteTop;
+      let drawH = DISPLAY_H;
+      let srcY = sy;
+      let srcH = cellH;
+
+      if (player.isSliding) {
+        const cropTop = cellH * 0.18;
+        const cropHeight = cellH * 0.65;
+        srcY = sy + cropTop;
+        srcH = cropHeight;
+        const cropAspect = cellW / cropHeight;
+        drawH = spriteW / cropAspect;
+        dy = player.y - drawH;
       }
-      ctx.restore();
-    }
 
-    if (curPowerup === PowerupType.BOOST) {
-      ctx.save();
-      ctx.fillStyle = '#10b981';
-      ctx.shadowColor = '#10b981';
-      ctx.shadowBlur = 12;
-      ctx.translate(playerX + 16, baseY + 36);
-      ctx.scale(1.5, 1.5);
-      ctx.beginPath();
-      ctx.moveTo(-2, -12); ctx.lineTo(8, -2); ctx.lineTo(0, 0);
-      ctx.lineTo(6, 12); ctx.lineTo(-8, 2); ctx.lineTo(0, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-      
-      ctx.save();
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
-      ctx.shadowColor = '#10b981';
-      ctx.shadowBlur = 20;
-      ctx.fillRect(playerX - 20, drawY + pHeight, pWidth + 40, 4);
-      ctx.restore();
-    }
-
-    const auraPulse = 0.5 + Math.sin(totalTime * 4) * 0.5;
-    ctx.save();
-    ctx.strokeStyle = `rgba(0, 245, 255, ${0.18 + auraPulse * 0.22})`;
-    ctx.lineWidth = 1.5;
-    ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 14;
-    ctx.beginPath();
-    ctx.ellipse(visualCx, visualCy, hitboxW * (1.4 + auraPulse * 0.15), hitboxH * (1.3 + auraPulse * 0.15), 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.restore();
-
-    const pHitbox = {
-      x: player.x,
-      y: drawY,
-      w: hitboxW,
-      h: hitboxH
-    };
-
-    for (const p of currentPowerups) {
-      if (!p.collected) {
-        const pbox = { x: p.x, y: p.y, w: p.width, h: p.height };
-        if (checkPlayerObstacleCollision(pHitbox, pbox, player.isSliding)) {
-          p.collected = true;
-          playSfx('/sounds/runner/powerup.mp3');
-          activatePowerup(p.type);
-          if (p.type === PowerupType.BOOST) {
-            gameSpeedRef.current = Math.min(gameSpeedRef.current + 40, RUNNER_SPEED.MAX_SPEED);
-            playSfx('/sounds/runner/boost-start.mp3');
-          }
-        }
-      }
-    }
-
-    if (!curGhost) {
-      for (let i = 0; i < currentObstacles.length; i++) {
-        const obs = currentObstacles[i];
-        if ((obs as any).broken) continue;
-
-        const oHitbox = {
-          x: obs.x,
-          y: groundLevel - obs.y - obs.height,
-          w: obs.width,
-          h: obs.height
-        };
-        
-        if (checkPlayerObstacleCollision(pHitbox, oHitbox, player.isSliding)) {
-          if (curShield) {
-            playSfx('/sounds/runner/shield-break.mp3');
-            deactivatePowerup();
-            (obs as any).broken = true;
-          } else {
-            triggerGameOver();
-            stop();
-          }
-          break;
-        }
-      }
+      ctx.drawImage(sprite, sx, srcY, cellW, srcH, dx, dy, spriteW, drawH);
     }
   });
 
@@ -634,7 +509,6 @@ export const GameCanvas: React.FC = () => {
   useEffect(() => {
     if (gameStatus === 'PLAYING') {
       obsReset();
-      pwrReset();
       gameSpeedRef.current = RUNNER_SPEED.INITIAL_SPEED;
       timeRef.current = 0;
       start();
