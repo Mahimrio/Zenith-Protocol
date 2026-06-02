@@ -5,8 +5,8 @@
 import { useRef } from 'react';
 
 export const usePhysics = () => {
-  const GRAVITY = 1800;
-  const JUMP_FORCE = -620;
+  const GRAVITY = 900;
+  const JUMP_FORCE = -600;
   const PLAYER_X = 120;
 
   const state = useRef({
@@ -14,30 +14,34 @@ export const usePhysics = () => {
     vy: 0,
     isGrounded: false,
     isSliding: false,
-    slideTimer: 0
+    slideTimer: 0,
+    jumpTime: 0,
+    jumpOffset: 0
   });
+
+  const FORWARD_OFFSET = 25;
 
   const update = (deltaTime: number, groundLevel: number) => {
     if (!state.current.isGrounded) {
       state.current.vy += GRAVITY * deltaTime;
+      state.current.jumpTime += deltaTime;
+      const airTime = (2 * Math.abs(JUMP_FORCE)) / GRAVITY;
+      const t = Math.min(state.current.jumpTime / airTime, 1);
+      state.current.jumpOffset = Math.sin(t * Math.PI) * FORWARD_OFFSET;
+    } else {
+      state.current.jumpTime = 0;
+      state.current.jumpOffset = 0;
     }
-    
+
     state.current.y += state.current.vy * deltaTime;
-    
+
     if (state.current.y >= groundLevel) {
       state.current.y = groundLevel;
       state.current.vy = 0;
       state.current.isGrounded = true;
     }
 
-    if (state.current.isSliding) {
-      state.current.slideTimer -= deltaTime;
-      if (state.current.slideTimer <= 0) {
-        state.current.isSliding = false;
-      }
-    }
-    
-    return { ...state.current, x: PLAYER_X };
+    return { ...state.current, x: PLAYER_X + state.current.jumpOffset };
   };
 
   const jump = () => {
@@ -45,15 +49,19 @@ export const usePhysics = () => {
       state.current.vy = JUMP_FORCE;
       state.current.isGrounded = false;
       state.current.isSliding = false;
+      state.current.jumpTime = 0;
     }
   };
 
   const slide = () => {
     if (state.current.isGrounded && !state.current.isSliding) {
       state.current.isSliding = true;
-      state.current.slideTimer = 0.6;
     }
   };
 
-  return { state, update, jump, slide };
+  const stopSlide = () => {
+    state.current.isSliding = false;
+  };
+
+  return { state, update, jump, slide, stopSlide };
 };

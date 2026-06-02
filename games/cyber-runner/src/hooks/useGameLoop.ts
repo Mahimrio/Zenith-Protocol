@@ -9,17 +9,22 @@ export const useGameLoop = (callback: (deltaTime: number, totalTime: number) => 
   const previousTimeRef = useRef<number>(0);
   const isRunning = useRef(false);
   const totalTimeRef = useRef(0);
+  const callbackRef = useRef(callback);
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   const loop = useCallback((time: number) => {
     if (!isRunning.current) return;
     if (previousTimeRef.current !== undefined) {
       const deltaTime = Math.min((time - previousTimeRef.current) / 1000, 0.1);
       totalTimeRef.current += deltaTime;
-      callback(deltaTime, totalTimeRef.current);
+      callbackRef.current(deltaTime, totalTimeRef.current);
     }
     previousTimeRef.current = time;
     requestRef.current = requestAnimationFrame(loop);
-  }, [callback]);
+  }, []);
 
   const start = useCallback(() => {
     if (isRunning.current) return;

@@ -12,10 +12,11 @@ import { useMusic } from '@sdk/hooks/useMusic';
  * Touch is handled by TouchControls overlay calling onJump/onSlide directly.
  * Plays SFX on each action and starts the cyber-runner music track.
  * @param onJump - Callback invoked when the player jumps
- * @param onSlide - Callback invoked when the player slides
+ * @param onSlide - Callback invoked when the player begins sliding
+ * @param onSlideEnd - Callback invoked when the player releases the slide key
  * @param isActive - Whether input handling is enabled
  */
-export const useInputHandler = (onJump: () => void, onSlide: () => void, isActive: boolean) => {
+export const useInputHandler = (onJump: () => void, onSlide: () => void, onSlideEnd: () => void, isActive: boolean) => {
   // ── Sound hooks ────────────────────────────────────────────
   const { play: playJump } = useSound('/sounds/runner/jump.mp3');
   const { play: playSlide } = useSound('/sounds/runner/slide.mp3');
@@ -36,10 +37,19 @@ export const useInputHandler = (onJump: () => void, onSlide: () => void, isActiv
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        e.preventDefault();
+        onSlideEnd();
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown, { passive: false });
+    window.addEventListener('keyup', handleKeyUp, { passive: false });
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [onJump, onSlide, isActive, playJump, playSlide]);
+  }, [onJump, onSlide, onSlideEnd, isActive, playJump, playSlide]);
 };
