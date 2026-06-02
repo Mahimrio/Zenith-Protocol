@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file backgroundLayers.ts
  * @description Parallax layer definitions.
  */
@@ -81,7 +81,7 @@ export const layers = [
   },
   {
     speedMultiplier: 0.25,
-    drawFunction: (ctx: CanvasRenderingContext2D, offset: number, width: number, height: number, totalTime: number) => {
+    drawFunction: (ctx: CanvasRenderingContext2D, offset: number, width: number, height: number, _totalTime: number) => {
       const baseHeight = height * 0.3;
       for(let i = 0; i < width * 2; i += 100) {
          const h = baseHeight + Math.sin(i * 0.1) * 80;
@@ -123,7 +123,7 @@ export const layers = [
   },
   {
     speedMultiplier: 0.5,
-    drawFunction: (ctx: CanvasRenderingContext2D, offset: number, width: number, height: number, totalTime: number) => {
+    drawFunction: (ctx: CanvasRenderingContext2D, offset: number, width: number, height: number, _totalTime: number) => {
       for(let i = 0; i < width * 2; i += 300) {
          const x = (i - offset) % (width * 2);
          const drawX = x < -100 ? x + width * 2 : x;
@@ -154,7 +154,7 @@ export const layers = [
   },
   {
     speedMultiplier: 1.0,
-    drawFunction: (ctx: CanvasRenderingContext2D, offset: number, width: number, height: number, totalTime: number) => {
+    drawFunction: (ctx: CanvasRenderingContext2D, offset: number, width: number, height: number, _totalTime: number) => {
       ctx.fillStyle = '#0a0a14';
       ctx.fillRect(0, height - 40, width, 40);
       
