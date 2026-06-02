@@ -58,19 +58,76 @@ All **17 audit bugs** have been fixed as of 2026-05-28. ✅
 ## Project Structure
 ```text
 Zenith Protocol/
-├── apps/
-│   ├── web/                        ← Vite + React SPA (Host App)
-│   └── api/                        ← Laravel 11 backend
-├── packages/
-│   ├── ui/                         ← Shared design system (GlassCard, NeonButton, etc.)
-│   ├── game-sdk/                   ← Types, event bus, hooks shared by all games
-│   └── cli/                        ← create-zenith-plugin scaffold tool
-├── games/
-│   ├── dojo-3d/                    ← 3D Wave survival game (R3F + Rapier)
-│   ├── card-battler/               ← Turn-based card strategy game
-│   └── cyber-runner/               ← 2.5D infinite runner
 ├── AGENTS.md                       ← Auto-loaded agent context (full architecture)
-└── FIX_*.md                        ← Fix documentation for audit bugs
+├── CODEBASE_SCAN.md                ← Full scan reference
+├── package.json                    ← Root workspace (pnpm)
+├── pnpm-workspace.yaml
+│
+├── apps/
+│   ├── web/                        ← React 18 + Vite + TypeScript frontend
+│   │   ├── package.json            ← name: "web"
+│   │   ├── vite.config.ts          ← /api proxy, dedupe, manualChunks, vite-plugin-pwa
+│   │   ├── tsconfig.app.json       ← strict, verbatimModuleSyntax
+│   │   ├── .env                    ← VITE_API_URL=/api, VITE_REVERB_*
+│   │   ├── index.html
+│   │   └── src/
+│   │       ├── main.tsx             ← Entry: registers 3 games, RouterProvider, registerSW
+│   │       ├── App.tsx              ← Root: <OfflineBanner /> + <AchievementToast /> + <Outlet />
+│   │       ├── index.css            ← Tailwind v3 + theme tokens + .zenith-range-slider
+│   │       ├── env.d.ts             ← Vite + vite-plugin-pwa/client env var types
+│   │       ├── router/              ← createBrowserRouter
+│   │       ├── components/          ← 17 components (Navbar, Leaderboard, etc.)
+│   │       ├── hooks/               ← 8 hooks (useAuth, useEcho, useLeaderboard, etc.)
+│   │       ├── layouts/             ← MainLayout, GameLayout
+│   │       ├── lib/                 ← axios.ts, pluginLoader.ts, offlineQueue.ts
+│   │       ├── worker/              ← syncWorker.ts
+│   │       ├── pages/               ← MenuPage, LoginPage, RegisterPage, ProfilePage
+│   │       ├── store/               ← authStore, leaderboardStore, gameStore,
+│   │       │                          achievementStore, challengeStore
+│   │       └── public/
+│   │           ├── icons/           ← pwa-192.png, pwa-512.png
+│   │           ├── images/          ← game banner PNGs
+│   │           └── sounds/          ← dojo/, runner/, card/, ui/
+│   │
+│   └── api/                        ← Laravel 11 backend (PHP 8.3)
+│       ├── composer.json           ← platform: php 8.3.0
+│       ├── bootstrap/app.php       ← registers api.php, channels.php
+│       ├── .env                    ← DB=mysql, BROADCAST=reverb
+│       ├── artisan
+│       ├── routes/
+│       │   ├── api.php             ← All API routes
+│       │   ├── channels.php        ← Broadcasting channels
+│       │   ├── console.php         ← challenges:generate scheduled at 23:00 UTC
+│       │   └── web.php
+│       ├── database/
+│       │   ├── migrations/         ← users, game_sessions, dojo/card/runner sessions,
+│       │   │                          achievements, user_achievements,
+│       │   │                          daily_challenges, user_challenges
+│       │   └── seeders/
+│       │       └── DatabaseSeeder.php ← 12 achievements + users + sessions
+│       └── app/
+│           ├── Http/
+│           │   ├── Controllers/    ← 9 controllers (Auth, Leaderboard, Profile, etc.)
+│           │   ├── Requests/       ← 5 form requests
+│           │   └── Resources/      ← 5 API resources
+│           ├── Models/             ← 9 models (User, GameSession, Achievement, etc.)
+│           ├── Repositories/       ← LeaderboardRepository, GameSessionRepository
+│           ├── Services/           ← 6 services (DojoScore, CardScore, RunnerScore,
+│           │                          CardMove, Achievement, ChallengeCompletion)
+│           ├── Jobs/               ← CheckAchievements.php
+│           ├── Events/             ← ScoreSubmitted.php, AchievementUnlocked.php
+│           └── Console/
+│               └── Commands/       ← GenerateDailyChallenges.php
+│
+├── games/
+│   ├── dojo-3d/                    ← @zenith/dojo-3d — R3F + Rapier 3D survival
+│   ├── cyber-runner/               ← @zenith/cyber-runner — 2D canvas runner
+│   └── card-battler/               ← @zenith/card-battler — 2D card game
+│
+└── packages/
+    ├── game-sdk/                   ← @zenith/game-sdk — shared types, eventBus, sound
+    ├── ui/                         ← @zenith/ui — GlassCard, NeonButton, StatBadge, etc.
+    └── cli/                        ← @zenith/cli — create-zenith-plugin scaffold tool
 ```
 
 ## Getting Started
