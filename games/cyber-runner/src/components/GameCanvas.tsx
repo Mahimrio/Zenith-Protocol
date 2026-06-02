@@ -375,25 +375,28 @@ export const GameCanvas: React.FC = () => {
     }
     ctx.restore();
 
-    // 3. JETPACK DETAIL (behind torso, left side)
+    // 3. JETPACK THRUSTERS (behind torso, left side)
     ctx.save();
     ctx.strokeStyle = '#8b5cf6';
     ctx.lineWidth = 1.5;
+    ctx.lineCap = 'round';
     ctx.shadowColor = '#8b5cf6';
-    ctx.shadowBlur = 8;
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(playerX - 2, baseY + 28, 8, 20, 2);
-      ctx.stroke();
-    } else {
-      ctx.strokeRect(playerX - 2, baseY + 28, 8, 20);
-    }
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.moveTo(playerX - 2, baseY + 30);
+    ctx.lineTo(playerX + 6, baseY + 30);
+    ctx.moveTo(playerX - 2, baseY + 48);
+    ctx.lineTo(playerX + 6, baseY + 48);
+    ctx.moveTo(playerX + 2, baseY + 30);
+    ctx.lineTo(playerX + 2, baseY + 48);
+    ctx.stroke();
 
+    const thrusterFlicker = 0.7 + Math.sin(totalTime * 18) * 0.3;
     ctx.fillStyle = '#f59e0b';
     ctx.shadowColor = '#f59e0b';
-    ctx.shadowBlur = 6;
-    ctx.fillRect(playerX - 1, baseY + 48, 2, 4);
-    ctx.fillRect(playerX + 3, baseY + 48, 2, 4);
+    ctx.shadowBlur = 8;
+    ctx.fillRect(playerX - 1, baseY + 48, 2, 4 * thrusterFlicker);
+    ctx.fillRect(playerX + 3, baseY + 48, 2, 4 * thrusterFlicker);
     ctx.restore();
 
     // 4. TORSO
@@ -406,22 +409,12 @@ export const GameCanvas: React.FC = () => {
     ctx.shadowBlur = 6;
 
     ctx.beginPath();
-    ctx.moveTo(playerX + 4, baseY + 30);
-    ctx.lineTo(playerX + 30, baseY + 30);
-    ctx.moveTo(playerX + 10, baseY + 54);
-    ctx.lineTo(playerX + 24, baseY + 54);
+    ctx.moveTo(playerX + 6, baseY + 30);
+    ctx.lineTo(playerX + 28, baseY + 30);
+    ctx.moveTo(playerX + 11, baseY + 54);
+    ctx.lineTo(playerX + 23, baseY + 54);
     ctx.moveTo(playerX + 17, baseY + 32);
     ctx.lineTo(playerX + 17, baseY + 52);
-    ctx.stroke();
-
-    ctx.strokeStyle = 'rgba(0, 245, 255, 0.45)';
-    ctx.lineWidth = 1.2;
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.moveTo(playerX + 12, baseY + 36);
-    ctx.lineTo(playerX + 22, baseY + 36);
-    ctx.moveTo(playerX + 12, baseY + 44);
-    ctx.lineTo(playerX + 22, baseY + 44);
     ctx.stroke();
 
     const corePulse = 0.85 + Math.sin(totalTime * 4) * 0.15;
@@ -474,32 +467,20 @@ export const GameCanvas: React.FC = () => {
 
     ctx.beginPath();
     ctx.moveTo(headX + 2, headY + 14);
-    ctx.lineTo(headX + 5, headY + 2);
-    ctx.lineTo(headX + 15, headY + 2);
-    ctx.lineTo(headX + 18, headY + 14);
-    ctx.lineTo(headX + 18, headY + 16);
-    ctx.lineTo(headX + 2, headY + 16);
-    ctx.closePath();
+    ctx.quadraticCurveTo(headX + 2, headY + 1, headX + 10, headY + 1);
+    ctx.quadraticCurveTo(headX + 18, headY + 1, headX + 18, headY + 14);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(headX + 4, headY);
-    ctx.lineTo(headX + 6, headY - 5);
-    ctx.lineTo(headX + 8, headY);
+    ctx.moveTo(headX + 5, headY);
+    ctx.lineTo(headX + 5, headY - 6);
+    ctx.lineTo(headX + 9, headY - 4);
     ctx.stroke();
 
     ctx.fillStyle = '#00f5ff';
     ctx.shadowColor = '#00f5ff';
     ctx.shadowBlur = 16;
-    ctx.fillRect(headX + 4, headY + 9, 12, 3);
-
-    ctx.strokeStyle = 'rgba(0, 245, 255, 0.5)';
-    ctx.lineWidth = 1;
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.moveTo(headX + 6, headY + 14);
-    ctx.lineTo(headX + 14, headY + 14);
-    ctx.stroke();
+    ctx.fillRect(headX + 4, headY + 8, 12, 3);
     ctx.restore();
     
     ctx.restore(); // Restore sliding scale
