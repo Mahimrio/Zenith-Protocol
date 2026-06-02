@@ -2,7 +2,7 @@
  * @file useObstacles.ts
  * @description Obstacle management.
  */
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import type { Obstacle } from '../utils/obstacleFactory';
 import { ObstacleType, createObstacle } from '../utils/obstacleFactory';
 import { useRunnerStore } from '../store/runnerStore';
@@ -12,12 +12,12 @@ export const useObstacles = () => {
   const spawnTimer = useRef(0);
   const totalSpawned = useRef(0);
 
-  const update = (gameSpeed: number, deltaTime: number, canvasWidth: number) => {
+  const update = useCallback((gameSpeed: number, deltaTime: number, canvasWidth: number) => {
     spawnTimer.current -= deltaTime;
     if (spawnTimer.current <= 0) {
-      const baseSpawnRate = 1.5;
-      const speedFactor = 280 / gameSpeed;
-      spawnTimer.current = baseSpawnRate * speedFactor + Math.random() * 0.5;
+      const { speedLevel } = useRunnerStore.getState();
+      const spawnInterval = Math.max(900, 2200 - (speedLevel - 1) * 130);
+      spawnTimer.current = spawnInterval / 1000;
 
       const types = [ObstacleType.BARRIER, ObstacleType.LOW_BLOCK, ObstacleType.HOVER_MINE];
       const type = totalSpawned.current < 5 ? ObstacleType.BARRIER : types[Math.floor(Math.random() * types.length)];
@@ -35,33 +35,13 @@ export const useObstacles = () => {
     }
 
     return obstacles.current;
-  };
+  }, []);
 
-  const draw = (ctx: CanvasRenderingContext2D, groundLevel: number) => {
-    obstacles.current.forEach(obs => {
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = '#f59e0b';
-      ctx.fillStyle = '#f59e0b';
-      
-      if (obs.type === ObstacleType.HOVER_MINE) {
-        ctx.beginPath();
-        ctx.arc(obs.x + obs.width / 2, groundLevel - obs.y - obs.height / 2, obs.width / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.arc(obs.x + obs.width / 2, groundLevel - obs.y - obs.height / 2, obs.width / 4, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.fillRect(obs.x, groundLevel - obs.y - obs.height, obs.width, obs.height);
-      }
-      ctx.shadowBlur = 0;
-    });
-  };
-
-  const reset = () => {
+  const reset = useCallback(() => {
     obstacles.current = [];
-    spawnTimer.current = 1.5;
+    spawnTimer.current = 2.2;
     totalSpawned.current = 0;
-  };
+  }, []);
 
-  return { obstacles, update, draw, reset, totalSpawned };
+  return { obstacles, update, reset, totalSpawned };
 };

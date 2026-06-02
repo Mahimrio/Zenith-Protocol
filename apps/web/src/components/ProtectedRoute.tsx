@@ -24,7 +24,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAdmin = false,
 }) => {
   const { user, token, fetchMe } = useAuthStore();
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(() => token !== null && user === null);
 
   useEffect(() => {
     // Token exists (e.g. from localStorage) but user hasn't been hydrated yet
