@@ -278,18 +278,37 @@ export const GameCanvas: React.FC = () => {
     drawPowerups(ctx, totalTime, currentPowerups);
     drawObstacles(ctx, groundLevel, totalTime, currentObstacles, player.x);
 
-    const pWidth = 32;
-    const pHeight = player.isSliding ? 36 : 72;
+    const hitboxW = 32;
+    const hitboxH = player.isSliding ? 36 : 72;
+    const visualScale = 1.7;
+    const pWidth = hitboxW;
+    const pHeight = hitboxH;
     const drawY = player.y - pHeight;
     const baseY = player.y - 72;
     const playerX = player.x;
-    
+
+    const visualCx = playerX + hitboxW / 2;
+    const visualCy = player.y - hitboxH / 2;
+    ctx.save();
+    ctx.translate(visualCx, visualCy);
+    ctx.scale(visualScale, visualScale);
+    ctx.translate(-visualCx, -visualCy);
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 245, 255, 0.18)';
+    ctx.shadowColor = '#00f5ff';
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.ellipse(visualCx, player.y - 2, hitboxW * 0.8, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
     trailRef.current.unshift({ x: player.x, y: drawY, isSliding: player.isSliding });
     if (trailRef.current.length > 10) trailRef.current.pop();
-    
+
     trailRef.current.forEach((t, i) => {
       ctx.fillStyle = `rgba(0, 245, 255, ${0.3 - (i * 0.03)})`;
-      ctx.fillRect(t.x, t.y, pWidth, t.isSliding ? 36 : 72);
+      ctx.fillRect(t.x, t.y, hitboxW, t.isSliding ? 36 : 72);
     });
 
     ctx.save();
@@ -536,11 +555,24 @@ export const GameCanvas: React.FC = () => {
       ctx.restore();
     }
 
+    const auraPulse = 0.5 + Math.sin(totalTime * 4) * 0.5;
+    ctx.save();
+    ctx.strokeStyle = `rgba(0, 245, 255, ${0.18 + auraPulse * 0.22})`;
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = '#00f5ff';
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.ellipse(visualCx, visualCy, hitboxW * (1.4 + auraPulse * 0.15), hitboxH * (1.3 + auraPulse * 0.15), 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
+
     const pHitbox = {
       x: player.x,
       y: drawY,
-      w: pWidth,
-      h: pHeight
+      w: hitboxW,
+      h: hitboxH
     };
 
     for (const p of currentPowerups) {
