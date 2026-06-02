@@ -400,34 +400,37 @@ export const GameCanvas: React.FC = () => {
     ctx.save();
     ctx.strokeStyle = '#00f5ff';
     ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.shadowColor = '#00f5ff';
     ctx.shadowBlur = 6;
 
     ctx.beginPath();
-    ctx.moveTo(playerX + 6, baseY + 26);
-    ctx.lineTo(playerX + 28, baseY + 26);
+    ctx.moveTo(playerX + 4, baseY + 30);
+    ctx.lineTo(playerX + 30, baseY + 30);
+    ctx.moveTo(playerX + 10, baseY + 54);
     ctx.lineTo(playerX + 24, baseY + 54);
-    ctx.lineTo(playerX + 10, baseY + 54);
-    ctx.closePath();
+    ctx.moveTo(playerX + 17, baseY + 32);
+    ctx.lineTo(playerX + 17, baseY + 52);
     ctx.stroke();
 
-    // Chest armor lines
-    ctx.strokeStyle = 'rgba(0, 245, 255, 0.4)';
+    ctx.strokeStyle = 'rgba(0, 245, 255, 0.45)';
+    ctx.lineWidth = 1.2;
     ctx.shadowBlur = 0;
-    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(playerX + 8, baseY + 32);
-    ctx.lineTo(playerX + 24, baseY + 48);
-    ctx.moveTo(playerX + 26, baseY + 32);
-    ctx.lineTo(playerX + 10, baseY + 48);
+    ctx.moveTo(playerX + 12, baseY + 36);
+    ctx.lineTo(playerX + 22, baseY + 36);
+    ctx.moveTo(playerX + 12, baseY + 44);
+    ctx.lineTo(playerX + 22, baseY + 44);
     ctx.stroke();
 
-    // Glowing core in chest
+    const corePulse = 0.85 + Math.sin(totalTime * 4) * 0.15;
     ctx.fillStyle = '#00f5ff';
     ctx.shadowColor = '#00f5ff';
-    ctx.shadowBlur = 12;
-    ctx.fillRect(playerX + 15, baseY + 36, 4, 8);
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.arc(playerX + 17, baseY + 40, 3 * corePulse, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
 
     // 5. RIGHT ARM (Draw over body)
@@ -449,7 +452,7 @@ export const GameCanvas: React.FC = () => {
     ctx.stroke();
     ctx.restore();
 
-    // 6. HEAD
+    // 6. HEAD — angular helmet
     ctx.save();
     const headX = playerX + 6;
     const headY = baseY + 8;
@@ -457,28 +460,46 @@ export const GameCanvas: React.FC = () => {
     const headH = 16;
 
     if (player.isSliding) {
-      ctx.translate(headX + headW/2, headY + headH/2);
+      ctx.translate(headX + headW / 2, headY + headH / 2);
       ctx.rotate(Math.PI / 6);
-      ctx.translate(-(headX + headW/2), -(headY + headH/2));
+      ctx.translate(-(headX + headW / 2), -(headY + headH / 2));
     }
-    
+
     ctx.strokeStyle = '#00f5ff';
     ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.shadowColor = '#00f5ff';
     ctx.shadowBlur = 8;
 
     ctx.beginPath();
-    if (ctx.roundRect) {
-      ctx.roundRect(headX, headY, headW, headH, 4);
-    } else {
-      ctx.rect(headX, headY, headW, headH);
-    }
+    ctx.moveTo(headX + 2, headY + 14);
+    ctx.lineTo(headX + 5, headY + 2);
+    ctx.lineTo(headX + 15, headY + 2);
+    ctx.lineTo(headX + 18, headY + 14);
+    ctx.lineTo(headX + 18, headY + 16);
+    ctx.lineTo(headX + 2, headY + 16);
+    ctx.closePath();
     ctx.stroke();
 
-    // Visor
+    ctx.beginPath();
+    ctx.moveTo(headX + 4, headY);
+    ctx.lineTo(headX + 6, headY - 5);
+    ctx.lineTo(headX + 8, headY);
+    ctx.stroke();
+
     ctx.fillStyle = '#00f5ff';
-    ctx.shadowBlur = 12;
-    ctx.fillRect(playerX + 10, baseY + 14, 14, 4);
+    ctx.shadowColor = '#00f5ff';
+    ctx.shadowBlur = 16;
+    ctx.fillRect(headX + 4, headY + 9, 12, 3);
+
+    ctx.strokeStyle = 'rgba(0, 245, 255, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.moveTo(headX + 6, headY + 14);
+    ctx.lineTo(headX + 14, headY + 14);
+    ctx.stroke();
     ctx.restore();
     
     ctx.restore(); // Restore sliding scale
