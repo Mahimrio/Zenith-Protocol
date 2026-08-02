@@ -1,11 +1,12 @@
 import React from 'react';
-import { RigidBody } from '@react-three/rapier';
+import { RigidBody, CuboidCollider } from '@react-three/rapier';
 
 export const Arena: React.FC = () => {
   return (
     <group>
       {/* Floor */}
-      <RigidBody type="fixed" colliders="cuboid">
+      <RigidBody type="fixed" colliders={false}>
+        <CuboidCollider args={[15, 0.1, 15]} position={[0, 0, 0]} />
         <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[30, 30]} />
           <meshStandardMaterial 
@@ -20,25 +21,29 @@ export const Arena: React.FC = () => {
       <gridHelper args={[30, 30, '#00f5ff', '#1a1a2e']} position={[0, 0.01, 0]} />
 
       {/* Boundary Walls */}
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 1.5, -15]}>
+      <RigidBody type="fixed" colliders={false} position={[0, 1.5, -15]}>
+        <CuboidCollider args={[15, 1.5, 0.25]} />
         <mesh receiveShadow castShadow>
           <boxGeometry args={[30, 3, 0.5]} />
           <meshStandardMaterial color="#08080c" roughness={0.5} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 1.5, 15]}>
+      <RigidBody type="fixed" colliders={false} position={[0, 1.5, 15]}>
+        <CuboidCollider args={[15, 1.5, 0.25]} />
         <mesh receiveShadow castShadow>
           <boxGeometry args={[30, 3, 0.5]} />
           <meshStandardMaterial color="#08080c" roughness={0.5} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" colliders="cuboid" position={[-15, 1.5, 0]} rotation={[0, Math.PI / 2, 0]}>
+      <RigidBody type="fixed" colliders={false} position={[-15, 1.5, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <CuboidCollider args={[15, 1.5, 0.25]} />
         <mesh receiveShadow castShadow>
           <boxGeometry args={[30, 3, 0.5]} />
           <meshStandardMaterial color="#08080c" roughness={0.5} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" colliders="cuboid" position={[15, 1.5, 0]} rotation={[0, Math.PI / 2, 0]}>
+      <RigidBody type="fixed" colliders={false} position={[15, 1.5, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <CuboidCollider args={[15, 1.5, 0.25]} />
         <mesh receiveShadow castShadow>
           <boxGeometry args={[30, 3, 0.5]} />
           <meshStandardMaterial color="#08080c" roughness={0.5} />

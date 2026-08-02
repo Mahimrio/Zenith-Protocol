@@ -23,7 +23,7 @@ export const StatBadge: React.FC<StatBadgeProps> = ({
   useEffect(() => {
     if (animated && typeof value === 'number' && valueRef.current) {
       const obj = { val: 0 }
-      gsap.to(obj, {
+      const tween = gsap.to(obj, {
         val: value,
         duration: 1,
         ease: 'power2.out',
@@ -33,6 +33,9 @@ export const StatBadge: React.FC<StatBadgeProps> = ({
           }
         },
       })
+      return () => {
+        tween.kill()
+      }
     }
   }, [value, animated])
 

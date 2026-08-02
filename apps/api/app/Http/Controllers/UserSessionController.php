@@ -10,7 +10,12 @@ use Illuminate\Http\Request;
 class UserSessionController extends Controller {
     public function index(Request $request): JsonResponse {
         return response()->json(
-            GameSessionResource::collection($request->user()->gameSessions()->latest()->get())
+            GameSessionResource::collection(
+                $request->user()->gameSessions()
+                    ->with(['dojoSession', 'cardSession', 'runnerSession'])
+                    ->latest()
+                    ->get()
+            )
         );
     }
 }

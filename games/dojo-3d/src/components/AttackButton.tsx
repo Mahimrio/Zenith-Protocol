@@ -4,7 +4,7 @@
  *
  * Bottom-right corner. 80px circular. GSAP scale 1→1.2→1 on press.
  */
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import gsap from 'gsap';
 import { useIsMobile } from '@sdk/utils/device';
 
@@ -21,6 +21,14 @@ export const AttackButton: React.FC<AttackButtonProps> = ({ onAttack }) => {
   const isMobile = useIsMobile();
   const btnRef = useRef<HTMLDivElement>(null);
   const cooldown = useRef(false);
+  const cooldownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (cooldownTimeout.current) clearTimeout(cooldownTimeout.current);
+      if (btnRef.current) gsap.killTweensOf(btnRef.current);
+    };
+  }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -42,7 +50,8 @@ export const AttackButton: React.FC<AttackButtonProps> = ({ onAttack }) => {
       });
     }
 
-    setTimeout(() => { cooldown.current = false; }, 500);
+    if (cooldownTimeout.current) clearTimeout(cooldownTimeout.current);
+    cooldownTimeout.current = setTimeout(() => { cooldown.current = false; }, 500);
   }, [onAttack]);
 
   if (!isMobile) return null;

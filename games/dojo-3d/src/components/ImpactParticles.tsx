@@ -11,12 +11,17 @@ export const ImpactParticles: React.FC = () => {
   const particlesRef = useRef<THREE.Points>(null);
   const { score, lastHitPosition } = useDojoStore();
   const [active, setActive] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (score > 0) {
       setActive(true);
-      setTimeout(() => setActive(false), 500);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setActive(false), 500);
     }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [score]);
 
   useFrame((_state, delta) => {

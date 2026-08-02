@@ -29,7 +29,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
       return;
     }
 
-    gsap.to(currentScoreRef.current, {
+    const tween = gsap.to(currentScoreRef.current, {
       val: score,
       duration: 1,
       ease: 'power2.out',
@@ -39,6 +39,10 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
         }
       }
     });
+
+    return () => {
+      tween.kill();
+    };
   }, [score, animated]);
 
   return (

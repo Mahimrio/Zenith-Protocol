@@ -2,7 +2,7 @@
  * @file NeonButton.tsx
  * @description A button with GSAP scale animation and neon variants.
  */
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
 export interface NeonButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -22,6 +22,13 @@ export const NeonButton: React.FC<NeonButtonProps> = ({
   ...props
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const el = buttonRef.current;
+    return () => {
+      if (el) gsap.killTweensOf(el);
+    };
+  }, []);
 
   const handleMouseEnter = () => {
     if (!disabled && !loading) {
