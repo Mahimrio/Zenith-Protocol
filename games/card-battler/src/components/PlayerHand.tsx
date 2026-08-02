@@ -1,6 +1,7 @@
 /**
  * @file PlayerHand.tsx
- * @description Renders hand cards with fan layout (desktop) or horizontal scroll (mobile).
+ * @description Player's hand of cards. Desktop: fan arc. Mobile: horizontal scroll.
+ * Lives at the bottom of the GameLayout — never absolute-positioned into the void.
  */
 import React, { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
@@ -11,7 +12,7 @@ import { useCardStore } from '../store/cardStore';
 import { useIsMobile } from '@sdk/utils/device';
 
 export const PlayerHand: React.FC = () => {
-  const { playerHand, playerMana, currentTurn, playCard, spectatorMode } = useCardStore();
+  const { playerHand, playerMana, currentTurn, playCard, spectatorMode, setDraggedCard } = useCardStore();
   const isMobile = useIsMobile();
   const cardRefs = useRef<(CardHandle | null)[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -56,7 +57,7 @@ export const PlayerHand: React.FC = () => {
         const flash = document.createElement('div');
         flash.className = 'fixed inset-0 bg-red-500/20 pointer-events-none z-[100] transition-opacity duration-300';
         document.body.appendChild(flash);
-        setTimeout(() => flash.style.opacity = '0', 50);
+        setTimeout(() => (flash.style.opacity = '0'), 50);
         setTimeout(() => flash.remove(), 300);
       }
       return;
@@ -90,7 +91,7 @@ export const PlayerHand: React.FC = () => {
   /* ── Mobile: horizontal scroll row ────────────────────────── */
   if (isMobile) {
     return (
-      <div className="absolute bottom-4 left-0 right-0 z-20 px-4">
+      <div className="w-full px-3 pb-2 pt-1 bg-gradient-to-t from-bg-primary via-bg-primary/95 to-transparent z-10">
         {showArrows && playerHand.length > 3 && (
           <>
             <button
@@ -110,16 +111,21 @@ export const PlayerHand: React.FC = () => {
         <div
           ref={scrollRef}
           onScroll={handleInteraction}
-          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
+          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-1"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {playerHand.map((card, index) => (
             <div
               key={card.instanceId}
               className="snap-center flex-shrink-0"
+              onPointerDown={() => setDraggedCard(card.instanceId)}
+              onPointerUp={() => setDraggedCard(null)}
+              onPointerCancel={() => setDraggedCard(null)}
             >
               <Card
-                ref={(el) => { cardRefs.current[index] = el; }}
+                ref={(el) => {
+                  cardRefs.current[index] = el;
+                }}
                 card={card}
                 location="hand"
                 isPlayable={!spectatorMode && currentTurn === 'player' && playerMana >= card.cost}
@@ -129,43 +135,49 @@ export const PlayerHand: React.FC = () => {
             </div>
           ))}
         </div>
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-        `}</style>
       </div>
     );
   }
 
   /* ── Desktop: fan layout ──────────────────────────────────── */
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-end justify-center perspective-[1000px] z-20">
-      {playerHand.map((card, index) => {
-        const total = playerHand.length;
-        const middle = (total - 1) / 2;
-        const rotation = (index - middle) * 8;
-        const yOffset = Math.abs(index - middle) * 10;
+    <div className="w-full flex items-end justify-center perspective-[1200px] py-2 pb-3 z-10">
+      <div className="relative flex items-end justify-center min-h-[180px]">
+        {playerHand.map((card, index) => {
+          const total = playerHand.length;
+          const middle = (total - 1) / 2;
+          const rotation = (index - middle) * 6;
+          const yOffset = Math.abs(index - middle) * 6;
+          const xOffset = (index - middle) * 70;
 
-        return (
-          <div
-            key={card.instanceId}
-            className="transition-transform duration-300 ease-out"
-            style={{
-              transform: `rotate(${rotation}deg) translateY(${yOffset}px)`,
-              marginLeft: index === 0 ? 0 : '-40px',
-              zIndex: index
-            }}
-          >
-            <Card
-              ref={(el) => { cardRefs.current[index] = el; }}
-              card={card}
-              location="hand"
-              isPlayable={!spectatorMode && currentTurn === 'player' && playerMana >= card.cost}
-              onClick={() => handlePlayCard(card, index)}
-              onDragPlay={() => handleDragPlay(card, index)}
-            />
-          </div>
-        );
-      })}
+          return (
+            <div
+              key={card.instanceId}
+              className="absolute transition-transform duration-300 ease-out"
+              style={{
+                transform: `translateX(${xOffset}px) translateY(${yOffset}px) rotate(${rotation}deg)`,
+                zIndex: index,
+                transformOrigin: 'bottom center',
+              }}
+              onPointerDown={() => setDraggedCard(card.instanceId)}
+              onPointerUp={() => setDraggedCard(null)}
+              onPointerCancel={() => setDraggedCard(null)}
+              onPointerLeave={() => setDraggedCard(null)}
+            >
+              <Card
+                ref={(el) => {
+                  cardRefs.current[index] = el;
+                }}
+                card={card}
+                location="hand"
+                isPlayable={!spectatorMode && currentTurn === 'player' && playerMana >= card.cost}
+                onClick={() => handlePlayCard(card, index)}
+                onDragPlay={() => handleDragPlay(card, index)}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

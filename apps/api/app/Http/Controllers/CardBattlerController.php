@@ -39,7 +39,9 @@ class CardBattlerController extends Controller {
     }
 
     public function playMove(PlayCardMoveRequest $request, CardMoveService $service): JsonResponse {
-        $session = GameSession::findOrFail($request->session_id);
+        $session = GameSession::where('user_id', $request->user()->id)
+            ->where('game_id', 'card-battler')
+            ->findOrFail($request->session_id);
         $success = $service->validateMove($request->user(), $session, $request->validated());
         
         if (!$success) {

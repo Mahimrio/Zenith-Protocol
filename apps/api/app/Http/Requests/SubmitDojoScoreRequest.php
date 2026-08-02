@@ -13,7 +13,7 @@ class SubmitDojoScoreRequest extends FormRequest {
             'waves_survived' => ['required', 'integer', 'min:0', 'max:100'],
             'enemies_killed' => ['required', 'integer', 'min:0', 'max:2000'],
             'score' => ['required', 'integer', 'min:0', 'max:10000000'],
-            'max_combo' => ['required', 'integer', 'min:0']
+            'max_combo' => ['required', 'integer', 'min:0', 'max:500']
         ];
     }
 }

@@ -15,6 +15,26 @@
   --color-neon-green: #10b981;
   --color-glass: rgba(255, 255, 255, 0.06);
   --color-border-glass: rgba(255, 255, 255, 0.12);
+
+  /* ── Card Type Colors ─────────────────────────────────────── */
+  --color-attack: #ef4444;
+  --color-attack-glow: rgba(239, 68, 68, 0.6);
+  --color-defense: #3b82f6;
+  --color-defense-glow: rgba(59, 130, 246, 0.6);
+  --color-spell: #a855f7;
+  --color-spell-glow: rgba(168, 85, 247, 0.6);
+  --color-utility: #10b981;
+  --color-utility-glow: rgba(16, 185, 129, 0.6);
+
+  /* ── Rarity Colors ────────────────────────────────────────── */
+  --color-rarity-common: #9ca3af;
+  --color-rarity-rare: #3b82f6;
+  --color-rarity-epic: #8b5cf6;
+  --color-rarity-legendary: #f59e0b;
+
+  /* ── Health Colors ────────────────────────────────────────── */
+  --color-hp-player: #00f5ff;
+  --color-hp-enemy: #ef4444;
 }
 
 @layer base {
@@ -22,6 +42,75 @@
     @apply bg-darker text-white antialiased;
   }
 }
+
+/* ── Card rarity glows ─────────────────────────────────────────── */
+.rarity-common {
+  border-color: var(--color-rarity-common);
+  box-shadow: 0 0 4px rgba(156, 163, 175, 0.3);
+}
+.rarity-rare {
+  border-color: var(--color-rarity-rare);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.45), inset 0 0 8px rgba(59, 130, 246, 0.15);
+}
+.rarity-epic {
+  border-color: var(--color-rarity-epic);
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.55), inset 0 0 12px rgba(139, 92, 246, 0.2);
+}
+.rarity-legendary {
+  border-color: var(--color-rarity-legendary);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.6), inset 0 0 16px rgba(245, 158, 11, 0.25);
+}
+
+/* ── Legendary shimmer sweep ──────────────────────────────────── */
+@keyframes legendary-sweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.legendary-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(245, 158, 11, 0.55) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: legendary-sweep 2.4s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* ── Battle-field neon grid ───────────────────────────────────── */
+@keyframes grid-pan {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 60px 60px, 60px 60px; }
+}
+.battlefield-grid {
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: grid-pan 12s linear infinite;
+}
+
+/* ── Radial vignette for arena focus ──────────────────────────── */
+.battlefield-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 40%,
+    rgba(5, 5, 8, 0.6) 80%,
+    rgba(5, 5, 8, 0.95) 100%
+  );
+}
+
+/* ── Card play / drop target glow ─────────────────────────────── */
+.drop-zone-active {
+  box-shadow: inset 0 0 30px rgba(0, 245, 255, 0.25);
+  border-color: var(--color-neon-cyan);
+}
+
+/* ── Hide scrollbar for mobile hand ──────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
 
 /* ── Volume-control range slider ──────────────────────────────── */
 .zenith-range-slider::-webkit-slider-thumb {

@@ -25,11 +25,14 @@ export const HealthBar: React.FC<HealthBarProps> = ({
 
   useEffect(() => {
     if (fillRef.current) {
-      gsap.to(fillRef.current, {
+      const tween = gsap.to(fillRef.current, {
         width: `${percentage}%`,
         duration: 0.5,
         ease: 'power2.out'
       });
+      return () => {
+        tween.kill();
+      };
     }
   }, [percentage]);
 

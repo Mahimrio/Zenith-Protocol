@@ -11,7 +11,7 @@ class SubmitRunnerScoreRequest extends FormRequest {
         return [
             'distance_meters' => ['required', 'integer', 'min:1', 'max:9999999'],
             'peak_speed' => ['required', 'integer', 'min:280', 'max:1000'],
-            'obstacles_avoided' => ['required', 'integer', 'min:0']
+            'obstacles_avoided' => ['required', 'integer', 'min:0', 'max:100000']
         ];
     }
 }
