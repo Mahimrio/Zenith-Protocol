@@ -7,12 +7,11 @@ import { useCardStore } from './store/cardStore';
 import { useGameBridge } from '@sdk/useGameBridge';
 import { useMusic } from '@sdk/hooks/useMusic';
 import { GameBoard } from './components/GameBoard';
-import { PlayerHand } from './components/PlayerHand';
 import { TurnIndicator } from './components/TurnIndicator';
 import { GameStatus } from '@sdk/types';
 
 const CardBattlerGame: React.FC = () => {
-  const { 
+  const {
     startGame, gameStatus, currentTurn,
     spectatorMode, toggleSpectatorMode, playerHand, playerMana, playCard, endTurn
   } = useCardStore();
@@ -78,24 +77,23 @@ const CardBattlerGame: React.FC = () => {
   if (gameStatus === GameStatus.IDLE) return null;
 
   return (
-    <div className="w-full h-full relative bg-bg-primary overflow-hidden font-sans pt-16">
-      {/* Spectator Mode Control */}
-      <div className="absolute top-20 right-6 z-40">
+    <div className="w-full h-full relative bg-bg-primary overflow-hidden font-sans">
+      {/* Spectator Mode Toggle — top right, small, doesn't overlap anything */}
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40">
         <button
           onClick={toggleSpectatorMode}
-          className={`px-4 py-2 rounded-xl border backdrop-blur-md font-mono text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2 cursor-pointer select-none pointer-events-auto ${
+          className={`px-3 py-1.5 rounded-lg border backdrop-blur-md font-mono text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center gap-2 cursor-pointer select-none pointer-events-auto ${
             spectatorMode
               ? 'bg-neon-cyan/20 border-neon-cyan text-neon-cyan shadow-[0_0_15px_rgba(0,245,255,0.4)]'
               : 'bg-glass border-border-glass text-text-muted hover:text-text-primary hover:border-text-primary'
           }`}
         >
           <span className={`w-2 h-2 rounded-full ${spectatorMode ? 'bg-neon-cyan animate-pulse shadow-[0_0_8px_#00f5ff]' : 'bg-text-muted'}`} />
-          {spectatorMode ? 'Spectating AI' : 'Spectate Game'}
+          {spectatorMode ? 'AI' : 'AI Play'}
         </button>
       </div>
 
       <GameBoard />
-      <PlayerHand />
       <TurnIndicator currentTurn={currentTurn} />
     </div>
   );

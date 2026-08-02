@@ -2,8 +2,8 @@
 
 > **Auto-loaded on every new session.** This file replaces the need for codebase scanning.
 > **Repo:** https://github.com/Mahimrio/Zenith-Protocol
-> **Last updated:** 2026-06-01
-> **All 17 audit bugs fixed + 5 post-audit fixes + 10 UI/UX improvements. All 36 PRs merged.** ✅
+> **Last updated:** 2026-06-03
+> **All 17 audit bugs fixed + 5 post-audit fixes + 10 UI/UX improvements + Card Battler visual overhaul (Phase 1). All 37 PRs merged.** ✅
 
 ---
 
@@ -64,6 +64,21 @@ When a new feature request comes in:
 | `text-primary` | `#f0f0ff` |
 | `text-muted` | `#6b7280` |
 
+### Card Type & Rarity Tokens (Card Battler)
+
+| Token | Value | Used For |
+|-------|-------|----------|
+| `attack` | `#ef4444` red | Attack card color (top bar, cost gem, icon) |
+| `defense` | `#3b82f6` blue | Defense card color |
+| `spell` | `#a855f7` purple | Spell card color |
+| `utility` | `#10b981` green | Utility card color |
+| `rarity-common` | `#9ca3af` gray | 4px subtle glow |
+| `rarity-rare` | `#3b82f6` blue | 12px blue bloom |
+| `rarity-epic` | `#8b5cf6` purple | 18px purple halo |
+| `rarity-legendary` | `#f59e0b` gold | 24px gold + animated shimmer sweep |
+
+> All defined in `apps/web/src/index.css` under `@theme {}` and exposed as Tailwind classes (`bg-attack`, `text-rarity-legendary`, etc.) and CSS utility classes (`.rarity-common`, `.rarity-rare`, `.rarity-epic`, `.rarity-legendary`, `.legendary-shimmer`, `.battlefield-grid`, `.battlefield-vignette`, `.drop-zone-active`, `.scrollbar-hide`).
+
 Glassmorphism: `backdrop-blur-md + bg-glass + border-glass + rounded-xl`
 Custom CSS classes in `index.css`: `bg-bg-primary`, `text-neon-cyan`, `border-border-glass` — use these, do not redefine.
 `.zenith-range-slider` CSS class exists for neon-themed volume sliders.
@@ -123,7 +138,7 @@ Zenith Protocol/
 │   │       ├── env.d.ts          ← Vite + vite-plugin-pwa/client env var types
 │   │       ├── router/
 │   │       │   └── index.tsx     ← createBrowserRouter
-│   │       ├── components/       ← 17 components (see below)
+│       │       ├── components/       ← 17 web components (see below)
 │   │       ├── hooks/            ← 8 hooks (see below)
 │   │       ├── layouts/          ← MainLayout, GameLayout
 │   │       ├── lib/              ← axios.ts, pluginLoader.ts, offlineQueue.ts
@@ -523,20 +538,44 @@ Game Session → ScoreService::validateAndSave()
 
 ### @zenith/card-battler
 
+> **Layout:** 4-zone flex column — `EnemyArea` (top) → `BattleField` (center, flex-1) → `PlayerHUD` (bottom strip) → `PlayerHand` (fan arc, always on-screen). No absolute positioning. Cards never clip. See `FIX_CardBattler_Visuals_Implementation.md`.
+
 | File | Purpose |
 |------|---------|
-| `src/index.tsx` | Entry: startGame, emitGameOver, Escape → requestPause. Spectator autoplay useEffect. "Spectate Game" toggle button |
-| `src/types.ts` | CardType (const), CardGameStatus (const), Card, CardPlayerState, CardEnemyState |
-| `src/cardDatabase.ts` | 7 cards (attack/defense/utility), createStartingDeck(), getRandomCard() |
-| `src/store/cardStore.ts` | Game lifecycle, draw/play cards, end turn, isVictory tracking, SFX, spectatorMode: boolean, toggleSpectatorMode() |
-| `src/components/GameBoard.tsx` | Enemy area (face-up in spectator), player area, "End Turn" disabled in spectator |
-| `src/components/Card.tsx` | Type-based coloring, pointer events (not mouse), drag-to-play via Pointer Events API |
-| `src/components/PlayerHand.tsx` | Fan layout (desktop), horizontal scroll (mobile), drag-play disabled in spectator |
-| `src/components/ManaBar.tsx` | Neon-cyan mana pips |
-| `src/components/TurnIndicator.tsx` | Turn number + End Turn button |
+| `src/index.tsx` | Entry: startGame, emitGameOver, Escape → requestPause. Spectator autoplay useEffect. Small "AI" toggle pill in top-right. |
+| `src/types.ts` | `CardType = 'attack' \| 'defense' \| 'spell' \| 'utility'`, `CardRarity = 'common' \| 'rare' \| 'epic' \| 'legendary'`, `CardInstance` (with `isShaking`, `isDying`, `attackPower`, `currentHp` animation flags) |
+| `src/cardDatabase.ts` | 22 cards (8 common / 6 rare / 4 epic / 4 legendary). Helpers: `getTypeColor(type)`, `getRarityColor(rarity)`, `getRandomDeck(size)` |
+| `src/store/cardStore.ts` | Game lifecycle, draw/play cards, end turn, isVictory tracking, SFX, `spectatorMode: boolean`, `toggleSpectatorMode()`, `serverSessionId: string \| null` for move validation |
+| `src/components/GameBoard.tsx` | Composer only — composes the 4 zones. No own layout logic. |
+| `src/components/EnemyArea.tsx` | Top zone: enemy portrait (👹), HP bar (red), intent preview (highest-cost affordable card, hidden name in non-spectator), face-down hand backs (purple striped), enemy deck pile |
+| `src/components/BattleField.tsx` | Center zone: animated neon grid background (`.battlefield-grid`), radial vignette, 5 dashed-slot rows (enemy + player), amber glowing divider with infinite pulse |
+| `src/components/PlayerHUD.tsx` | Bottom HUD strip: deck pile (left) / HP bar / mana bar / end-turn button. Spectator indicator pill floats above when active |
+| `src/components/PlayerHand.tsx` | Fan arc layout (desktop: 6° rotation, 70px offset, 6px Y-arc). Horizontal scroll (mobile). Drag-play via Pointer Events API. |
+| `src/components/Card.tsx` | Full anatomy: cost gem (top-left, type-colored), type icon (top-right), name, art block (radial gradient + icon), effect text, power number, rarity tag. **Rarity borders + glows** (`.rarity-common/rare/epic/legendary`). **Legendary animated gold shimmer sweep** (`.legendary-shimmer`). Mobile-responsive sizing (88×132 → 100×150 → 120×180). |
+| `src/components/HPGauge.tsx` | HP bar with GSAP tween, shake on damage (±8px yoyo), red flash overlay, floating `-N` damage number, low-HP pulse at <15% |
+| `src/components/DeckPile.tsx` | Stacked card-back icon (3 layers for depth) with count badge, color-coded for player (cyan) / enemy (amber) |
+| `src/components/ManaBar.tsx` | Rotating diamond gems (45° rotated rounded squares), purple fill with `0 0 6px` glow, dim border-40 for empty slots. Pulse anim on mana gain via CSS keyframe `mana-pulse`. Self-subscribes to store. |
+| `src/components/EndTurnButton.tsx` | Neon-cyan "▶ End Turn" button, disabled "⏳ Enemy" state when not player's turn, GSAP scale hover/click |
+| `src/components/TurnIndicator.tsx` | Full-width sliding banner — x: 110% → 0 (0.4s power3.out) → hold 0.8s pulse → x: 0 → -110% (0.4s power2.in). Emoji prefix (⚡ Your Turn / 🔥 Enemy Turn). |
 
 > SPECTATOR MODE: Local AI vs AI toggle — NOT Reverb broadcasting.
-> `emitGameOver` passes `spectatorMode=true` → score submission skipped in useGameBridge.
+> `emitGameOver` passes `spectatorMode=true` → score submission skipped in `useGameBridge`.
+> Visual parity: render paths identical to player mode, only **interactions** are gated by `spectatorMode`.
+
+#### Card Visual System
+
+| Token | Value | Used For |
+|-------|-------|----------|
+| `--color-attack` | `#ef4444` red | Attack cards (top bar, cost gem, type icon) |
+| `--color-defense` | `#3b82f6` blue | Defense cards |
+| `--color-spell` | `#a855f7` purple | Spell cards |
+| `--color-utility` | `#10b981` green | Utility cards |
+| `--color-rarity-common` | `#9ca3af` | 4px subtle glow |
+| `--color-rarity-rare` | `#3b82f6` | 12px blue bloom |
+| `--color-rarity-epic` | `#8b5cf6` | 18px purple halo |
+| `--color-rarity-legendary` | `#f59e0b` | 24px gold, **animated shimmer** |
+
+> All tokens defined in `apps/web/src/index.css` under `@theme {}`. CSS utility classes: `.rarity-common`, `.rarity-rare`, `.rarity-epic`, `.rarity-legendary`, `.legendary-shimmer`, `.battlefield-grid`, `.battlefield-vignette`, `.drop-zone-active`, `.scrollbar-hide`.
 
 ---
 
@@ -556,7 +595,7 @@ Game Session → ScoreService::validateAndSave()
 
 ## CI STATUS
 
-- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (752 modules)
+- Frontend: lint clean, TypeScript 0 errors, pnpm build succeeds (756 modules, card-battler bundle 147 KB / 50 KB gzip)
 - Backend: PHP 8.3 platform locked, 11 Pest tests passing (all 11 passing as of 2026-05-30)
 - GitHub Actions: both frontend-ci and backend-ci jobs green
 
@@ -578,6 +617,9 @@ Game Session → ScoreService::validateAndSave()
 12. **Offline Queue** — IndexedDB via offlineQueue.ts, flushed by syncWorker.ts on reconnect
 13. **Spectator Mode** — Local AI vs AI in Card Battler only. No backend events. Score skipped.
 14. **SDK CLI** — `node packages/cli/bin/create-zenith-plugin.js` scaffolds new game modules
+15. **Card Battler Spatial Contract** — 4-zone flex column (`EnemyArea → BattleField → PlayerHUD → PlayerHand`) inside `GameLayout`. No absolute positioning for primary content. Hand is always the last child, never clipped.
+16. **Rarity Visual System** — All Card Battler cards have `rarity` in `cardDatabase` (common/rare/epic/legendary). CSS classes `.rarity-{tier}` drive border + glow. Legendary gets `.legendary-shimmer` animated gold sweep. Type-color tokens (`--color-attack/defense/spell/utility`) drive top bar, cost gem, type icon.
+17. **GSAP context cleanup** — New components use `gsap.context().revert()` in effect cleanup to prevent animation leaks on unmount.
 
 ---
 
@@ -621,3 +663,4 @@ Game Session → ScoreService::validateAndSave()
 | ~~P2~~ **FIXED** | ~~Cyber Runner player character redesign~~ | ~~`GameCanvas.tsx`~~ (see `FIX_CyberRunner_Player_Visuals.md`) |
 | ~~P2~~ **FIXED** | ~~Cyber Runner environment upgrade~~ | ~~`backgroundLayers.ts`, `useParallax.ts`, `GameCanvas.tsx`~~ (see `FIX_CyberRunner_Environment.md`) |
 | ~~P2~~ **FIXED** | ~~Cyber Runner Powerups System~~ | ~~`usePowerups.ts`, `GameCanvas.tsx`, `runnerStore.ts`, `obstacleFactory.ts`~~ (see `FIX_CyberRunner_Powerups.md`) |
+| ~~P0~~ **FIXED** | ~~Card Battler visual overhaul (Phase 1) — broken layout, clipped cards, invisible board~~ | ~~`GameBoard.tsx` + 6 new components (`EnemyArea`, `BattleField`, `PlayerHUD`, `EndTurnButton`, `HPGauge`, `DeckPile`), rewrites of `Card`, `PlayerHand`, `ManaBar`, `TurnIndicator`, `index.tsx`. `cardDatabase.ts` expanded 20→22 cards, `types.ts` added `epic` rarity + `utility` type, `index.css` added card type/rarity theme tokens + rarity glows + legendary shimmer + battlefield grid.~~ (see `FIX_CardBattler_Visuals.md` + `FIX_CardBattler_Visuals_Implementation.md`) | |

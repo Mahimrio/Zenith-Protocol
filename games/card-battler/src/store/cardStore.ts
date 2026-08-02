@@ -4,7 +4,7 @@
  * Integrates playSfx for draw, play, attack, victory, and defeat sounds.
  */
 import { create } from 'zustand';
-import type { CardDefinition, CardInstance } from '../types';
+import type { CardDefinition, CardInstance, CardPlayAnimation } from '../types';
 import { allCards, getRandomDeck } from '../cardDatabase';
 import { GameStatus } from '@sdk/types';
 import { playSfx } from '@sdk/store/soundStore';
@@ -37,6 +37,10 @@ interface CardState {
   spectatorMode: boolean;
   serverSessionId: string | null;
   toggleSpectatorMode: () => void;
+
+  // Drag state — for drop-zone glow feedback in BattleField
+  draggedCardId: string | null;
+  setDraggedCard: (instanceId: string | null) => void;
 
   startGame: () => void;
   drawCard: (target?: 'player' | 'enemy', amount?: number) => void;
@@ -78,8 +82,10 @@ export const useCardStore = create<CardState>((set, get) => ({
   isVictory: false,
   spectatorMode: false,
   serverSessionId: null,
+  draggedCardId: null,
 
   toggleSpectatorMode: () => set(state => ({ spectatorMode: !state.spectatorMode })),
+  setDraggedCard: (instanceId) => set({ draggedCardId: instanceId }),
 
   startGame: () => {
     set({
@@ -103,7 +109,8 @@ export const useCardStore = create<CardState>((set, get) => ({
       turnsSurvived: 0,
       isVictory: false,
       spectatorMode: false,
-      serverSessionId: null
+      serverSessionId: null,
+      draggedCardId: null
     });
     get().drawCard('player', 4);
     get().drawCard('enemy', 4);
@@ -171,7 +178,9 @@ export const useCardStore = create<CardState>((set, get) => ({
       
       let newBoard = [...s.playerBoard];
       if (card.type !== 'spell' && newBoard.length < 5) {
-        newBoard.push(card);
+        // Tag the newly-played card so its mount animation knows to slide in
+        const playedCard: CardInstance = { ...card, playAnimation: 'slideIn' as CardPlayAnimation };
+        newBoard.push(playedCard);
       }
       
       return {
@@ -179,7 +188,8 @@ export const useCardStore = create<CardState>((set, get) => ({
         playerBoard: newBoard,
         playerMana: s.playerMana - card.cost,
         cardsPlayed: s.cardsPlayed + 1,
-        score: s.score + card.cost * 10
+        score: s.score + card.cost * 10,
+        draggedCardId: null
       };
     });
 
@@ -243,8 +253,8 @@ export const useCardStore = create<CardState>((set, get) => ({
       
       set(s => {
         const newHand = s.enemyHand.filter(c => c.instanceId !== toPlay.instanceId);
-        const newBoard = s.enemyBoard.length < 5 && toPlay.type !== 'spell' 
-          ? [...s.enemyBoard, toPlay] 
+        const newBoard: CardInstance[] = s.enemyBoard.length < 5 && toPlay.type !== 'spell' 
+          ? [...s.enemyBoard, { ...toPlay, playAnimation: 'flipIn' as CardPlayAnimation, isFlipped: true }] 
           : s.enemyBoard;
         
         return { 
